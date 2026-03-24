@@ -1,5 +1,6 @@
 package com.example.ritecsmobile.data.remote.api
 
+import com.example.ritecsmobile.data.remote.dto.BaseResponse
 import com.example.ritecsmobile.data.remote.dto.BenefitResponse
 import com.example.ritecsmobile.data.remote.dto.BookResponse
 import com.example.ritecsmobile.data.remote.dto.GuidelineResponse
@@ -9,9 +10,13 @@ import com.example.ritecsmobile.data.remote.dto.JournalServiceResponse
 import com.example.ritecsmobile.data.remote.dto.LoginRequest
 import com.example.ritecsmobile.data.remote.dto.LoginResponse
 import com.example.ritecsmobile.data.remote.dto.MemberResponse
+import com.example.ritecsmobile.data.remote.dto.RegisterRequest
+import com.example.ritecsmobile.data.remote.dto.RegisterResponse
+import com.example.ritecsmobile.data.remote.dto.ResendOtpRequest
 import com.example.ritecsmobile.data.remote.dto.TrainingResponse
 import com.example.ritecsmobile.data.remote.dto.UserDto
 import com.example.ritecsmobile.data.remote.dto.UserProfileResponse
+import com.example.ritecsmobile.data.remote.dto.VerifyOtpRequest
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.Body
@@ -23,11 +28,29 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.Response
+import retrofit2.http.Headers
+
 
 interface AuthApi {
+    @Headers("Accept: application/json")
     @POST("auth/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
-
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    @Headers("Accept: application/json")
+    @POST("auth/request-otp")
+    suspend fun register(@Body request: RegisterRequest): Response<RegisterResponse>
+    @Headers("Accept: application/json")
+    @POST("auth/verify-otp")
+    suspend fun verifyOtp(@Body request: VerifyOtpRequest): Response<LoginResponse>
+    @Headers("Accept: application/json")
+    @POST("auth/resend-otp")
+    suspend fun resendOtp(@Body request: ResendOtpRequest): Response<BaseResponse>
+    @Headers("Accept: application/json")
+    @POST("auth/request-manual")
+    suspend fun requestManualActivation(@Body request: com.example.ritecsmobile.data.remote.dto.ManualActivationRequest): Response<BaseResponse>
+    @Headers("Accept: application/json")
+    @POST("auth/login/google")
+    suspend fun googleLogin(@Body request: com.example.ritecsmobile.data.remote.dto.GoogleLoginRequest): Response<LoginResponse>
     @GET("user")
     suspend fun getUserProfile(
         @Header("Authorization") token: String

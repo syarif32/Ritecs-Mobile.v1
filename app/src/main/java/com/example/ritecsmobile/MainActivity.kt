@@ -9,7 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.ritecsmobile.ui.screens.main.MainScreen
 import com.example.ritecsmobile.ui.theme.RitecsMobileTheme
-
+import com.example.ritecsmobile.ui.theme.screens.home.BerandaScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

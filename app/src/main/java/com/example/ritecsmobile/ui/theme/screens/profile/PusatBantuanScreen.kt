@@ -85,7 +85,7 @@ fun PusatBantuanScreen(onNavigateBack: () -> Unit) {
                     Column {
                         Text("Email Support Ritecs", fontSize = 12.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("admin@ritecs.org", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("ritecspublisher@gmail.com", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }

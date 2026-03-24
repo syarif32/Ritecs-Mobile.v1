@@ -1,12 +1,10 @@
 package com.example.ritecsmobile.data.remote.dto
 
-// Cetakan untuk data yang KITA KIRIM ke Laravel
 data class LoginRequest(
     val email: String,
     val password: String
 )
 
-// Cetakan untuk data yang KITA TERIMA dari Laravel
 data class LoginResponse(
     val status: String,
     val message: String,
@@ -17,6 +15,46 @@ data class LoginData(
     val user: UserDto,
     val token: String
 )
+// Data Class Tambahan untuk Auth
+
+data class RegisterRequest(
+    val first_name: String,
+    val last_name: String,
+    val email: String,
+    val password: String,
+    val password_confirmation: String
+)
+
+data class RegisterResponse(
+    val status: String,
+    val message: String,
+    val user_id: Int? = null
+)
+
+data class VerifyOtpRequest(
+    val email: String,
+    val otp_code: String
+)
+
+data class ResendOtpRequest(
+    val email: String
+)
+data class ManualActivationRequest(
+    val email: String,
+    val reason: String,
+    val other_reason_detail: String? = null
+)
+data class GoogleLoginRequest(
+    val email: String,
+    val google_id: String,
+    val first_name: String,
+    val last_name: String?,
+    val img_path: String?
+)
+data class BaseResponse(
+    val status: String,
+    val message: String
+)
 
 
 data class UserDto(
@@ -26,7 +64,6 @@ data class UserDto(
     val membership: MembershipDto? = null
 )
 
-// Cetakan baru untuk data Membership dari tabel memberships
 data class MembershipDto(
     val id: Int,
     val status: String,
@@ -52,8 +89,8 @@ data class MemberDto(
     val guest_first_name: String?,
     val guest_last_name: String?,
     val member_number: String?,
-    val status: Int, // 1 = Active, 0 = Expired
-    val img_path: String? // Path foto profil
+    val status: Int,
+    val img_path: String?
 )
 data class HomeResponse(
     val status: String,

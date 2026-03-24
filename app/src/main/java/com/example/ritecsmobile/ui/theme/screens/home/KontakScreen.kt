@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,6 +35,7 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
     var isLoadingInfo by remember { mutableStateOf(true) }
     var isSubmitting by remember { mutableStateOf(false) }
 
+    // Form States
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -41,72 +43,135 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
     var subject by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
+    val ritecsBlue = Color(0xFF0062CD)
+    val softBg = Color(0xFFF8FAFC)
+
     LaunchedEffect(Unit) {
         try {
             val response = RetrofitClient.authApi.getContactInfo()
             infoData = response.data
-        } catch (e: Exception) {} finally { isLoadingInfo = false }
+        } catch (e: Exception) {
+            android.util.Log.e("CONTACT_ERR", "Error: ${e.message}")
+        } finally { isLoadingInfo = false }
     }
 
     Scaffold(
+        containerColor = softBg,
         topBar = {
-            TopAppBar(
-                title = { Text("Hubungi Kami", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.White) }
+            // 💡 Top Bar lebih tipis dan modern
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Hubungi Kami",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.Black
+                    )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.primary, titleContentColor = Color.White)
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.Black)
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.White
+                ),
+                modifier = Modifier.statusBarsPadding()
             )
         }
     ) { paddingValues ->
         if (isLoadingInfo) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = ritecsBlue)
+            }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F6FA)).padding(paddingValues).verticalScroll(rememberScrollState()).padding(24.dp)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
             ) {
-                Text("Mari Terhubung", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Punya pertanyaan atau butuh bantuan? Tim Ritecs siap melayani Anda.", fontSize = 14.sp, color = Color.Gray)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        ContactItem(Icons.Default.LocationOn, "Alamat", infoData?.address ?: "-")
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.5f))
-                        ContactItem(Icons.Default.Email, "Email", infoData?.email ?: "-")
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.5f))
-                        ContactItem(Icons.Default.Phone, "Telepon / WA", infoData?.phone ?: "-")
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray.copy(alpha = 0.5f))
-                        ContactItem(Icons.Default.Language, "Situs Web", infoData?.site ?: "-")
+                // HEADER SECTION
+                Text(
+                    "Mari Terhubung",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Black,
+                    color = ritecsBlue,
+                    letterSpacing = (-0.5).sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Punya pertanyaan atau butuh bantuan? Tim Ritecs siap melayani Anda sepenuh hati.",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    lineHeight = 20.sp
+                )
+
+                Spacer(modifier = Modifier.height(28.dp))
+
+                // INFO KONTAK CARD
+                Text("Informasi Kontak", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        ContactItem(Icons.Default.LocationOn, "Alamat Kantor", infoData?.address ?: "-", ritecsBlue)
+                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                        ContactItem(Icons.Default.Email, "Email Support", infoData?.email ?: "-", ritecsBlue)
+                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                        ContactItem(Icons.Default.Phone, "WhatsApp / Telp", infoData?.phone ?: "-", ritecsBlue)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Tinggalkan Pesan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(16.dp))
+                // FORM SECTION
+                Text("Kirim Pesan Langsung", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
 
-                Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nama Lengkap*") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email*") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), singleLine = true)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("No. Handphone*") }, modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone), singleLine = true)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Asal Instansi / Alamat*") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(value = subject, onValueChange = { subject = it }, label = { Text("Subjek*") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedTextField(value = message, onValueChange = { message = it }, label = { Text("Pesan Anda*") }, modifier = Modifier.fillMaxWidth(), minLines = 4)
+                        CustomOutlinedTextField(value = name, onValueChange = { name = it }, label = "Nama Lengkap*", icon = Icons.Default.Person)
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        CustomOutlinedTextField(value = email, onValueChange = { email = it }, label = "Alamat Email*", icon = Icons.Default.AlternateEmail, keyboardType = KeyboardType.Email)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CustomOutlinedTextField(value = phone, onValueChange = { phone = it }, label = "No. Handphone*", icon = Icons.Default.Smartphone, keyboardType = KeyboardType.Phone)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        CustomOutlinedTextField(value = subject, onValueChange = { subject = it }, label = "Subjek Pesan*", icon = Icons.Default.Topic)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        OutlinedTextField(
+                            value = message,
+                            onValueChange = { message = it },
+                            label = { Text("Pesan Anda*") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 4,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = ritecsBlue,
+                                unfocusedBorderColor = Color(0xFFE2E8F0)
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
 
                         Button(
                             onClick = {
                                 if (name.isBlank() || email.isBlank() || message.isBlank()) {
-                                    Toast.makeText(context, "Harap lengkapi field bertanda bintang (*)", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Lengkapi field wajib (*)", Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
                                 isSubmitting = true
@@ -115,41 +180,73 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                                         val req = ContactSendRequest(name, email, phone, address, subject, message)
                                         val res = RetrofitClient.authApi.sendContactMessage(req)
                                         Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
+                                        // Reset form
                                         name = ""; email = ""; phone = ""; address = ""; subject = ""; message = ""
                                     } catch (e: Exception) {
                                         Toast.makeText(context, "Gagal mengirim pesan", Toast.LENGTH_SHORT).show()
                                     } finally { isSubmitting = false }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(54.dp),
                             shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = ritecsBlue),
                             enabled = !isSubmitting
                         ) {
-                            if (isSubmitting) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            else {
-                                Icon(Icons.Default.Send, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Kirim Pesan", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            if (isSubmitting) {
+                                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            } else {
+                                Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text("Kirim Pesan Sekarang", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }
 }
 
 @Composable
-fun ContactItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, value: String) {
+fun CustomOutlinedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray) },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF0062CD),
+            unfocusedBorderColor = Color(0xFFE2E8F0)
+        )
+    )
+}
+
+@Composable
+fun ContactItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, value: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(color.copy(alpha = 0.1f), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(22.dp))
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
-            Text(value, fontSize = 14.sp, color = Color.DarkGray)
+        Column {
+            Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+            Text(value, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
         }
     }
 }
