@@ -22,12 +22,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Brush // 💡 INI YANG BIKIN ERROR (TADI KELUPAAN DI IMPORT)
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.painterResource // 💡 INI DITAMBAHKAN UNTUK MEMBACA DRAWABLE
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,17 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.ritecsmobile.R
+import com.example.ritecsmobile.R // 💡 INI DITAMBAHKAN UNTUK MENGAKSES FOLDER DRAWABLE
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.data.remote.dto.JournalDto
 import com.example.ritecsmobile.ui.theme.screens.book.BASE_URL_BE
 import com.example.ritecsmobile.ui.theme.screens.book.formatToRupiah
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-// 💡 Konstanta Warna Ritecs
+
 val RitecsBlue = Color(0xFF0062CD)
-val RitecsLightBlue = Color(0xFF2E86EB)
 val BackgroundSoft = Color(0xFFF8FAFC)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -75,91 +72,72 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
         }
     }
 
-    // Banner Promo
+    // 💡 Banner Promo (DIUBAH MENJADI MENGAMBIL DARI DRAWABLE)
     val promoBanners = listOf(
-        PromoBanner("https://img.freepik.com/free-vector/gradient-modern-book-sale-banner-template_23-2149867049.jpg", "https://ritecs.org"),
-        PromoBanner("https://img.freepik.com/free-vector/flat-world-book-day-horizontal-sale-banner-template_23-2149312151.jpg", "https://ritecs.org"),
-        PromoBanner("https://img.freepik.com/free-vector/gradient-world-book-day-horizontal-sale-banner-template_23-2149313278.jpg", "https://ritecs.org")
+        PromoBannerDrawable(R.drawable.banner1, "https://ritecs.org"),
+        PromoBannerDrawable(R.drawable.banner2, "https://ritecs.org"),
+        // Tambahkan banner3 jika ada, jika belum biarkan 2 saja
     )
     val pagerState = rememberPagerState(pageCount = { promoBanners.size })
 
-    // 💡 LOGIKA ALPHA UNTUK STICKY TOP BAR (Smooth Transition)
+    // Logika transparansi Top Bar saat di-scroll
     val topBarAlpha by remember {
         derivedStateOf {
-            (scrollState.value / 350f).coerceIn(0f, 1f)
+            (scrollState.value / 300f).coerceIn(0f, 1f)
         }
     }
 
     Box(modifier = Modifier.fillMaxSize().background(BackgroundSoft)) {
-
-        // --- 1. CONTENT LAYER (Scrollable) ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // HEADER AREA (Gradient Background + Banner)
-            Box(modifier = Modifier.fillMaxWidth()) {
-                // Background Biru Gradasi
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(280.dp)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(RitecsBlue, RitecsLightBlue.copy(alpha = 0.8f))
-                            ),
-                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                        )
-                )
 
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Spacer(modifier = Modifier.height(115.dp)) // Ruang untuk Sticky Top Bar
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxWidth()
+                ) { page ->
+                    val banner = promoBanners[page]
+                    // 💡 DIUBAH DARI AsyncImage MENJADI Image BAWAAN COMPOSE
+                    androidx.compose.foundation.Image(
+                        painter = painterResource(id = banner.imageResId),
+                        contentDescription = "Promo Banner",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(260.dp)
+                            .clickable {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(banner.linkUrl)))
+                            }
+                    )
+                }
 
-                    // BANNER PROMO
-                    HorizontalPager(
-                        state = pagerState,
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        pageSpacing = 16.dp,
-                        modifier = Modifier.fillMaxWidth()
-                    ) { page ->
-                        val banner = promoBanners[page]
-                        Card(
+                Row(
+                    Modifier
+                        .padding(start = 20.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    repeat(promoBanners.size) { iteration ->
+                        val isSelected = pagerState.currentPage == iteration
+                        val color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
+                        val width = if (isSelected) 20.dp else 8.dp
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(150.dp)
-                                .clickable {
-                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(banner.linkUrl)))
-                                },
-                            shape = RoundedCornerShape(20.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                        ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context).data(banner.imageUrl).crossfade(true).build(),
-                                contentDescription = "Promo Banner",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
-
-                    // Dots Indikator
-                    Row(
-                        Modifier.height(35.dp).fillMaxWidth().padding(top = 16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        repeat(promoBanners.size) { iteration ->
-                            val color = if (pagerState.currentPage == iteration) Color.White else Color.White.copy(alpha = 0.4f)
-                            val width = if (pagerState.currentPage == iteration) 22.dp else 8.dp
-                            Box(modifier = Modifier.padding(horizontal = 3.dp).clip(CircleShape).background(color).height(7.dp).width(width))
-                        }
+                                .padding(end = 6.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                                .height(6.dp)
+                                .width(width)
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // --- MENU LAYANAN ---
+            // --- MENU LAYANAN
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 shape = RoundedCornerShape(20.dp),
@@ -183,8 +161,6 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(28.dp))
-
-            // --- SECTION BUKU TERBARU ---
             SectionHeader("Buku Terbaru", onSeeAll = { onNavigate("buku_tab") })
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
@@ -205,8 +181,6 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(28.dp))
-
-            // --- SECTION JURNAL TERBARU ---
             SectionHeader("Jurnal Rilis Terbaru", onSeeAll = { onNavigate("jurnal_tab") })
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
@@ -228,19 +202,35 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(100.dp)) // Ruang ekstra di bawah
+            Spacer(modifier = Modifier.height(100.dp))
         }
 
-        // --- 2. STICKY TOP BAR LAYER (Fixed at top) ---
-        Surface(
-            modifier = Modifier.fillMaxWidth().height(110.dp),
-            color = RitecsBlue.copy(alpha = topBarAlpha), // Transisi warna di sini
-            shadowElevation = (topBarAlpha * 4).dp
+        // --- 2. STICKY TOP BAR LAYER (HEADER SEARCH BAR) ---
+        Box(
+            modifier = Modifier
+//                .padding(bottom = 10.dp)
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF004191).copy(alpha = topBarAlpha),
+                            Color(0xFF0091FF).copy(alpha = topBarAlpha)
+                        )
+                    )
+                )
         ) {
             Box(
-                modifier = Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(horizontal = 20.dp)
+                    .offset(y = (-15).dp),
+
                 contentAlignment = Alignment.Center
             ) {
+
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -285,7 +275,8 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
 
 // --- HELPER COMPOSABLES ---
 
-data class PromoBanner(val imageUrl: String, val linkUrl: String)
+// 💡 Data class baru khusus untuk Drawable
+data class PromoBannerDrawable(val imageResId: Int, val linkUrl: String)
 
 @Composable
 fun MenuIconItem(icon: ImageVector, title: String, tint: Color, onClick: () -> Unit) {

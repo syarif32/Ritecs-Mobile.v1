@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "747745894694",
+    "project_id": "ritecs-mobile",
+    "storage_bucket": "ritecs-mobile.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:747745894694:android:96cc0a841928d951a2e1e7",
+        "android_client_info": {
+          "package_name": "com.example.ritecsmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhOqnD30_jxzWYpgWzqxUxippfSq6iLhw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,6 +2,7 @@ package com.example.ritecsmobile.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -33,6 +35,7 @@ import com.example.ritecsmobile.data.remote.dto.VerifyOtpRequest
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,8 +60,6 @@ fun VerifyOtpScreen(
     var otherReasonDetail by remember { mutableStateOf("") }
     var isSubmittingManual by remember { mutableStateOf(false) }
 
-    val primaryColor = MaterialTheme.colorScheme.primary
-
     // TIMER LOGIC
     LaunchedEffect(timeLeft) {
         if (timeLeft > 0) {
@@ -68,6 +69,7 @@ fun VerifyOtpScreen(
         }
     }
 
+    // 💡 BACKGROUND TETAP BERSIH/PUTIH
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(
             modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp),
@@ -95,16 +97,16 @@ fun VerifyOtpScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = Color.White), // 💡 Kotak dibikin putih solid
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Verifikasi Email", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
+                        Text("Verifikasi Email", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1E293B))
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Kode 6 digit telah dikirim ke:\n$email", fontSize = 14.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Kode 6 digit telah dikirim ke:\n$email", fontSize = 14.sp, textAlign = TextAlign.Center, color = Color(0xFF64748B))
 
                         Spacer(modifier = Modifier.height(32.dp))
 
@@ -117,13 +119,13 @@ fun VerifyOtpScreen(
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
                             textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = 12.sp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0)),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue, unfocusedBorderColor = Color(0xFFE2E8F0)),
                             placeholder = { Text("_ _ _ _ _ _", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 24.sp) }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // TOMBOL VERIFIKASI
+                        // 💡 TOMBOL VERIFIKASI (DIBIKIN GRADASI BIRU KEREN)
                         Button(
                             onClick = {
                                 if (otpCode.length == 6) {
@@ -145,10 +147,27 @@ fun VerifyOtpScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(12.dp), enabled = !isLoading && otpCode.length == 6
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Set transparent
+                            contentPadding = PaddingValues(), // Hapus padding default
+                            enabled = !isLoading && otpCode.length == 6
                         ) {
-                            if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            else Text("Verifikasi Akun", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            // 💡 Efek Gradasi pada Box di dalam Button
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(RitecsDarkBlue, RitecsLightBlue) // Gradasi Kiri ke Kanan
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                else Text("Verifikasi Akun", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
                         }
                     }
                 }
@@ -157,9 +176,9 @@ fun VerifyOtpScreen(
 
                 // TOMBOL BANTUAN KECIL DI BAWAH CARD
                 TextButton(onClick = { showRulesDialog = true }) {
-                    Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = primaryColor)
+                    Icon(Icons.Default.Info, contentDescription = null, modifier = Modifier.size(16.dp), tint = RitecsBlue)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Bantuan & Aturan OTP", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = primaryColor)
+                    Text("Bantuan & Aturan OTP", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = RitecsBlue)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -169,7 +188,7 @@ fun VerifyOtpScreen(
                     Text(text = "Kirim ulang dalam $timeLeft detik", color = Color.Gray, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                 } else {
                     Text(
-                        text = "Kirim Ulang OTP", color = primaryColor, fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                        text = "Kirim Ulang OTP", color = RitecsBlue, fontWeight = FontWeight.Bold, fontSize = 15.sp,
                         modifier = Modifier.clickable {
                             coroutineScope.launch {
                                 timeLeft = 60
@@ -221,7 +240,7 @@ fun VerifyOtpScreen(
                     Text("Maksimal permintaan OTP adalah 3 kali dalam 24 jam demi keamanan.", fontSize = 13.sp, color = Color.DarkGray)
                 }
             },
-            confirmButton = { TextButton(onClick = { showRulesDialog = false }) { Text("Saya Mengerti", fontWeight = FontWeight.Bold) } },
+            confirmButton = { TextButton(onClick = { showRulesDialog = false }) { Text("Saya Mengerti", fontWeight = FontWeight.Bold, color = RitecsBlue) } },
             shape = RoundedCornerShape(16.dp), containerColor = MaterialTheme.colorScheme.surface
         )
     }
@@ -243,7 +262,11 @@ fun VerifyOtpScreen(
                     val reasons = listOf("Email Penuh", "Tidak Masuk Spam", "Salah Ketik Email", "Lainnya")
                     reasons.forEach { reason ->
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable { selectedReason = reason }) {
-                            RadioButton(selected = selectedReason == reason, onClick = { selectedReason = reason })
+                            RadioButton(
+                                selected = selectedReason == reason,
+                                onClick = { selectedReason = reason },
+                                colors = RadioButtonDefaults.colors(selectedColor = RitecsBlue)
+                            )
                             Text(reason, fontSize = 13.sp)
                         }
                     }
@@ -253,7 +276,8 @@ fun VerifyOtpScreen(
                         OutlinedTextField(
                             value = otherReasonDetail, onValueChange = { otherReasonDetail = it },
                             label = { Text("Jelaskan masalah") }, modifier = Modifier.fillMaxWidth(),
-                            textStyle = TextStyle(fontSize = 13.sp), shape = RoundedCornerShape(8.dp)
+                            textStyle = TextStyle(fontSize = 13.sp), shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue)
                         )
                     }
                 }
@@ -277,13 +301,14 @@ fun VerifyOtpScreen(
                             }
                         } else Toast.makeText(context, "Pilih alasan", Toast.LENGTH_SHORT).show()
                     },
-                    enabled = !isSubmittingManual, shape = RoundedCornerShape(8.dp)
+                    enabled = !isSubmittingManual, shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue)
                 ) {
                     if (isSubmittingManual) CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                     else Text("Kirim")
                 }
             },
-            dismissButton = { TextButton(onClick = { showManualDialog = false }) { Text("Batal") } },
+            dismissButton = { TextButton(onClick = { showManualDialog = false }) { Text("Batal", color = Color.Gray) } },
             shape = RoundedCornerShape(16.dp), containerColor = MaterialTheme.colorScheme.surface
         )
     }

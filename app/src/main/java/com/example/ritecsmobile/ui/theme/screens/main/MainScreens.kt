@@ -27,7 +27,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.ui.screens.auth.LoginScreen
+import com.example.ritecsmobile.ui.screens.auth.RegisterScreen
+import com.example.ritecsmobile.ui.screens.auth.VerifyOtpScreen // 💡 Menggunakan VerifyOtpScreen sesuai nama fungsi aslimu
 import com.example.ritecsmobile.ui.screens.journal.JurnalScreen
+import com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen
+import com.example.ritecsmobile.ui.screens.onboarding.SplashScreen
 import com.example.ritecsmobile.ui.theme.screens.home.BerandaScreen
 import kotlinx.coroutines.launch
 
@@ -36,21 +40,22 @@ fun MainScreen() {
     val bottomNavController = rememberNavController()
     val context = LocalContext.current
     val authPreferences = remember { AuthPreferences(context) }
-
+    val RitecsBlue = Color(0xFF0062CD)
+    val RitecsLightBlue = Color(0xFF2E86EB)
+    val BackgroundSoft = Color(0xFFF5F6FA)
     val token by authPreferences.authToken.collectAsState(initial = "")
     var selectedBook by remember { mutableStateOf<BookDto?>(null) }
     var selectedTraining by remember { mutableStateOf<com.example.ritecsmobile.data.remote.dto.TrainingDto?>(null) }
     var selectedHaki by remember { mutableStateOf<com.example.ritecsmobile.data.remote.dto.HakiPackageDto?>(null) }
-
-    // 💡 [BARU] MATA-MATA ROUTE: Cek user lagi di halaman mana
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    // 💡 [BARU] Daftar halaman yang BOLEH nampilin Bottom Nav
     val mainTabs = listOf("home_tab", "buku_tab", "jurnal_tab", "profile_tab")
+
+    // 💡 State sementara untuk menyimpan email dari proses Register menuju OTP
+    var registeredEmail by remember { mutableStateOf("") }
 
     Scaffold(
         bottomBar = {
-            // 💡 [BARU] Logika Pinter: Munculin Navbar CUMA kalau lagi di Menu Utama
             if (currentRoute in mainTabs) {
                 BottomNavigationBar(bottomNavController)
             }
@@ -59,8 +64,33 @@ fun MainScreen() {
         Box(modifier = Modifier.padding(innerPadding)) {
             NavHost(
                 navController = bottomNavController,
-                startDestination = "home_tab"
+                startDestination = "splash_route"
             ) {
+                composable("splash_route") {
+                    com.example.ritecsmobile.ui.screens.onboarding.SplashScreen(
+                        onNavigateToOnboarding = {
+                            bottomNavController.navigate("onboarding_route") {
+                                popUpTo("splash_route") { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
+                // 💡 2. RUTE ONBOARDING
+                composable("onboarding_route") {
+                    com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen(
+                        onNavigateToLogin = {
+                            bottomNavController.navigate("login_route") {
+                                popUpTo("onboarding_route") { inclusive = true }
+                            }
+                        },
+                        onNavigateToHome = {
+                            bottomNavController.navigate("home_tab") {
+                                popUpTo("onboarding_route") { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 // 1. Tab Beranda
                 composable("home_tab") {
                     BerandaScreen(onNavigate = { route ->
@@ -197,11 +227,30 @@ fun MainScreen() {
                 composable("kontak") {
                     com.example.ritecsmobile.ui.screens.home.KontakScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
+
+                // 💡 INI PERBAIKAN REGISTER
                 composable("register_route") {
-                    Text("Halaman Register (Belum dibuat)")
+                    RegisterScreen(
+                        onRegisterSuccess = { email ->
+                            // 1. Simpan emailnya dulu
+                            registeredEmail = email
+                            // 2. Lempar ke halaman OTP
+                            bottomNavController.navigate("otp_route")
+                        },
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
                 }
                 composable("otp_route") {
-                    Text("Halaman OTP (Belum dibuat)")
+                    VerifyOtpScreen(
+                        email = registeredEmail,
+                        onVerifySuccess = {
+                            // Kalau OTP sukses, arahkan ke profil/home
+                            bottomNavController.navigate("profile_tab") {
+                                popUpTo("home_tab")
+                            }
+                        },
+                        onNavigateBack = { bottomNavController.popBackStack() } // Tombol balik
+                    )
                 }
             }
         }

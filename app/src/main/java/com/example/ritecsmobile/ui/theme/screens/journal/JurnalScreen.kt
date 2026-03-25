@@ -80,7 +80,7 @@ fun JurnalScreen() {
             // Top Bar Modern dengan Search Bar & Logo Mini
             Surface(color = Color.White, shadowElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    Text("Jurnal Publikasi", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+//                    Text("Jurnal Publikasi", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Row(

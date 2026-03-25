@@ -30,7 +30,7 @@ import com.example.ritecsmobile.data.remote.dto.BookDto
 import java.text.NumberFormat
 import java.util.Locale
 
-const val BASE_URL_BE = "http://192.168.1.6:8000/"
+const val BASE_URL_BE = "http://192.168.1.5:8000/"
 fun formatToRupiah(amount: Int?): String {
     if (amount == null || amount == 0) return "Rp0"
     val localeID = Locale("in", "ID")

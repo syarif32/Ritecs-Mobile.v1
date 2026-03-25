@@ -2,6 +2,7 @@ package com.example.ritecsmobile.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +33,11 @@ import com.example.ritecsmobile.data.remote.dto.LoginRequest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
+// 💡 Warna Khas Ritecs
+val RitecsDarkBlue = Color(0xFF004191)
+val RitecsLightBlue = Color(0xFF0091FF)
+val RitecsBlue = Color(0xFF0062CD)
+
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
@@ -43,27 +50,22 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-
-    // 💡 STATE BARU: Untuk mengatur tampil/sembunyi password
     var passwordVisible by remember { mutableStateOf(false) }
 
     val primaryColor = MaterialTheme.colorScheme.primary
 
+    // 💡 KEMBALI MENGGUNAKAN SURFACE PUTIH CLEAN
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        // 💡 RAHASIA LAYOUT TENGAH & KEYBOARD RESPONSIVE
-        // Box digunakan agar saat keyboard ditutup, konten pas di tengah layar (Center).
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .imePadding() // Mendorong UI ke atas jika keyboard muncul
+                .imePadding()
                 .padding(horizontal = 24.dp),
             contentAlignment = Alignment.Center
         ) {
-
-            // Column di dalam Box diberi verticalScroll agar bisa digeser jika ruang layar sempit (terpotong keyboard)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -72,11 +74,7 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.Center
             ) {
 
-                // --- KONTEN DIMULAI DARI SINI ---
-
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // 1. LOGO RITECS
                 Image(
                     painter = painterResource(id = R.drawable.ritecs_logo),
                     contentDescription = "Logo Ritecs",
@@ -85,7 +83,6 @@ fun LoginScreen(
                         .padding(bottom = 24.dp)
                 )
 
-                // 2. KOTAK FORM (CARD MODERN DENGAN SHADOW)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
@@ -128,15 +125,13 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 💡 FIELD PASSWORD (DENGAN IKON MATA)
+                        // FIELD PASSWORD
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
                             label = { Text("Password") },
-                            // Logika: Jika true, tampilkan teks biasa. Jika false, jadikan titik-titik.
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                            // Ikon mata di sebelah kanan text field
                             trailingIcon = {
                                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                                 val description = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
@@ -156,7 +151,7 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // TOMBOL LOGIN
+                        // 💡 TOMBOL LOGIN (DIBIKIN GRADASI BIRU KEREN)
                         Button(
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -193,17 +188,30 @@ fun LoginScreen(
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            enabled = !isLoading
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Set transparent biar Box di dalamnya bisa kelihatan
+                            contentPadding = PaddingValues() // Hapus padding default
                         ) {
-                            if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            else Text("Masuk Akun", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(RitecsDarkBlue, RitecsLightBlue) // Gradasi Kiri ke Kanan
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                else Text("Masuk Akun", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 3. PEMISAH
+                // PEMISAH KEMBALI WARNA NORMAL
                 Row(modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
                     Text(" ATAU ", fontSize = 12.sp, color = Color(0xFF64748B), modifier = Modifier.padding(horizontal = 8.dp))
@@ -215,12 +223,12 @@ fun LoginScreen(
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
                 var isGoogleLoading by remember { mutableStateOf(false) }
 
+                // TOMBOL GOOGLE KEMBALI WARNA NORMAL
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
                             isGoogleLoading = true
                             try {
-                                // 1. Minta Google untuk memunculkan pilihan akun
                                 val request = androidx.credentials.GetCredentialRequest.Builder()
                                     .addCredentialOption(
                                         com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
@@ -231,7 +239,6 @@ fun LoginScreen(
                                     )
                                     .build()
 
-                                // 2. Tangkap akun yang dipilih user
                                 val result = credentialManager.getCredential(
                                     request = request,
                                     context = context,
@@ -241,20 +248,18 @@ fun LoginScreen(
                                 if (credential is androidx.credentials.CustomCredential &&
                                     credential.type == com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                                 ) {
-                                    // 3. Ekstrak data diri user dari Google
                                     val googleIdTokenCredential = com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.createFrom(credential.data)
 
-                                    val googleEmail = googleIdTokenCredential.id // Email asli user
-                                    val googleId = googleIdTokenCredential.idToken // Token ID unik
+                                    val googleEmail = googleIdTokenCredential.id
+                                    val googleId = googleIdTokenCredential.idToken
 
                                     val fullName = googleIdTokenCredential.displayName ?: "User"
                                     val nameParts = fullName.split(" ", limit = 2)
                                     val firstName = nameParts.getOrNull(0) ?: "User"
-                                    val lastName = nameParts.getOrNull(1) // Bisa null
+                                    val lastName = nameParts.getOrNull(1)
 
                                     val profilePic = googleIdTokenCredential.profilePictureUri?.toString()
 
-                                    // 4. Tembak ke API Laravel kita!
                                     val apiRequest = com.example.ritecsmobile.data.remote.dto.GoogleLoginRequest(
                                         email = googleEmail,
                                         google_id = googleId,
@@ -301,7 +306,6 @@ fun LoginScreen(
                     if (isGoogleLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     } else {
-
                         Image(painter = painterResource(id = R.drawable.ic_google), contentDescription = null, modifier = Modifier.size(20.dp).padding(end = 8.dp))
                         Text("Lanjutkan dengan Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
@@ -309,7 +313,7 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 5. LINK REGISTER
+                // LINK REGISTER KEMBALI WARNA NORMAL
                 Row(modifier = Modifier.padding(bottom = 32.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Belum punya akun? ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Text(

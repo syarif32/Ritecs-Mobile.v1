@@ -2,6 +2,7 @@ package com.example.ritecsmobile.ui.screens.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,10 +34,13 @@ import com.example.ritecsmobile.data.remote.dto.RegisterRequest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
+// 💡 Warna Khas Ritecs
+
+
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: (String) -> Unit,
-    onNavigateBack: () -> Unit // Kembali ke Login
+    onNavigateBack: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -44,21 +49,16 @@ fun RegisterScreen(
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    // 💡 TAMBAHAN: State untuk Konfirmasi Password
     var confirmPassword by remember { mutableStateOf("") }
-
     var isLoading by remember { mutableStateOf(false) }
     var isGoogleLoading by remember { mutableStateOf(false) }
-
     var passwordVisible by remember { mutableStateOf(false) }
-    // 💡 TAMBAHAN: State visibilitas mata untuk konfirmasi
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val primaryColor = MaterialTheme.colorScheme.primary
 
+    // 💡 KEMBALI MENGGUNAKAN SURFACE PUTIH CLEAN
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        // RAHASIA UI TENGAH & KEYBOARD RESPONSIVE
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -75,7 +75,7 @@ fun RegisterScreen(
             ) {
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // LOGO RITECS
+                // LOGO RITECS NORMAL
                 Image(
                     painter = painterResource(id = R.drawable.ritecs_logo),
                     contentDescription = "Logo Ritecs",
@@ -95,8 +95,6 @@ fun RegisterScreen(
                     ) {
                         Text("Daftar Akun", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
                         Text("Bergabung bersama Ritecs", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 24.dp))
-
-                        // NAMA DEPAN & BELAKANG (Berdampingan biar rapi)
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             OutlinedTextField(
                                 value = firstName, onValueChange = { firstName = it }, label = { Text("Nama Depan") },
@@ -137,7 +135,7 @@ fun RegisterScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 💡 TAMBAHAN: KONFIRMASI PASSWORD DENGAN MATA
+                        // KONFIRMASI PASSWORD DENGAN MATA
                         OutlinedTextField(
                             value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Konfirmasi Password") },
                             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -152,16 +150,14 @@ fun RegisterScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // TOMBOL DAFTAR
+                        // 💡 TOMBOL DAFTAR (DIBIKIN GRADASI BIRU KEREN)
                         Button(
                             onClick = {
                                 if (firstName.isNotEmpty() && email.isNotEmpty() && password.length >= 8) {
-                                    // 💡 TAMBAHAN: Validasi Kecocokan Password
                                     if (password == confirmPassword) {
                                         coroutineScope.launch {
                                             isLoading = true
                                             try {
-                                                // Meneruskan confirmPassword ke API
                                                 val request = RegisterRequest(firstName, lastName, email, password, confirmPassword)
                                                 val response = RetrofitClient.authApi.register(request)
                                                 if (response.isSuccessful) {
@@ -182,17 +178,33 @@ fun RegisterScreen(
                                     Toast.makeText(context, "Lengkapi data & password min 8 karakter", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(12.dp), enabled = !isLoading
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Set transparent
+                            contentPadding = PaddingValues(), // Hapus padding default
+                            enabled = !isLoading
                         ) {
-                            if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                            else Text("Daftar Sekarang", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(RitecsDarkBlue, RitecsLightBlue) // Gradasi Kiri ke Kanan
+                                        ),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                                else Text("Daftar Sekarang", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // PEMISAH
+                // PEMISAH KEMBALI WARNA NORMAL
                 Row(modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
                     Text(" ATAU ", fontSize = 12.sp, color = Color(0xFF64748B), modifier = Modifier.padding(horizontal = 8.dp))
@@ -202,6 +214,8 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
+
+                // TOMBOL GOOGLE KEMBALI WARNA NORMAL
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -253,7 +267,7 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // LINK LOGIN
+                // LINK LOGIN KEMBALI WARNA NORMAL
                 Row(modifier = Modifier.padding(bottom = 32.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Sudah punya akun? ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Text("Masuk di sini", color = primaryColor, fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable { onNavigateBack() })
