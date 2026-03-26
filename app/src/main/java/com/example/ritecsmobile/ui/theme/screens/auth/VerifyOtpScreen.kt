@@ -125,7 +125,7 @@ fun VerifyOtpScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 💡 TOMBOL VERIFIKASI (DIBIKIN GRADASI BIRU KEREN)
+                        //  TOMBOL VERIFIKASI (DIBIKIN GRADASI BIRU KEREN)
                         Button(
                             onClick = {
                                 if (otpCode.length == 6) {
@@ -134,7 +134,9 @@ fun VerifyOtpScreen(
                                         try {
                                             val response = RetrofitClient.authApi.verifyOtp(VerifyOtpRequest(email, otpCode))
                                             if (response.isSuccessful) {
-                                                AuthPreferences(context).saveToken(response.body()?.data?.token ?: "")
+                                                val tokenDariServer = response.body()?.data?.token ?: ""
+                                                val roleDariServer = response.body()?.data?.role ?: "user"
+                                                AuthPreferences(context).saveToken(tokenDariServer, roleDariServer)
                                                 Toast.makeText(context, "Verifikasi Berhasil!", Toast.LENGTH_SHORT).show()
                                                 onVerifySuccess()
                                             } else {

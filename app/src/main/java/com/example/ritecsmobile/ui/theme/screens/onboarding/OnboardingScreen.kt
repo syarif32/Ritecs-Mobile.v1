@@ -73,14 +73,12 @@ fun OnboardingScreen(onNavigateToLogin: () -> Unit, onNavigateToHome: () -> Unit
                 OnboardingPageUI(page = pages[position])
             }
 
-            // 💡 BAGIAN BAWAH (TITIK INDIKATOR & TOMBOL)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Indikator Titik (Selalu di tengah)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 32.dp)) {
                     repeat(pages.size) { iteration ->
                         val color = if (pagerState.currentPage == iteration) ritecsBlue else Color.LightGray
@@ -95,9 +93,7 @@ fun OnboardingScreen(onNavigateToLogin: () -> Unit, onNavigateToHome: () -> Unit
                     }
                 }
 
-                // 💡 LOGIKA TOMBOL: Beda halaman, beda tombol yang muncul
                 if (pagerState.currentPage == pages.size - 1) {
-                    // Kalau di halaman terakhir, munculkan 2 pilihan
                     Button(
                         onClick = { onNavigateToLogin() },
                         modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -114,7 +110,7 @@ fun OnboardingScreen(onNavigateToLogin: () -> Unit, onNavigateToHome: () -> Unit
                         Text("Lanjut tanpa akun", color = Color.Gray, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 } else {
-                    // Kalau bukan di halaman terakhir, tombol "Lanjut" biasa
+
                     Button(
                         onClick = {
                             coroutineScope.launch {

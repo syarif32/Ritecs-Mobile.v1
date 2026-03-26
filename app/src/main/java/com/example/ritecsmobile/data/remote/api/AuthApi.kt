@@ -30,6 +30,7 @@ import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.Response
 import retrofit2.http.Headers
+import retrofit2.http.PUT
 
 
 interface AuthApi {
@@ -153,4 +154,28 @@ interface AuthApi {
     suspend fun incrementBookDownload(@Path("id") bookId: Int): retrofit2.Response<Any>
     @GET("journals")
     suspend fun getJournals(): com.example.ritecsmobile.data.remote.dto.JournalResponse
+
+
+
+
+
+//    admin
+// Mengambil list permintaan aktivasi (OTP Manual) - Sesuai rute Laravel: activation.index
+@GET("admin/activation-requests")
+suspend fun getActivationRequests(
+    @Header("Authorization") token: String
+): Response<com.example.ritecsmobile.data.remote.dto.ActivationResponse>
+
+    // Approve Aktivasi - Sesuai rute Laravel: activation.approve
+    @PUT("admin/activation-requests/{id}/approve")
+    suspend fun approveActivation(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse>
+
+    // Mengambil data User untuk manajemen - Sesuai rute Laravel: users.index
+    @GET("admin/users")
+    suspend fun getAllUsers(
+        @Header("Authorization") token: String
+    ): Response<com.example.ritecsmobile.data.remote.dto.UserManageResponse>
 }

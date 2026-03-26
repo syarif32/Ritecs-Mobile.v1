@@ -118,8 +118,8 @@ fun ProfileSettingsScreen(
                 institution = data.institution ?: ""
                 email = data.email ?: ""
 
-                existingAvatarUrl = data.img_path?.let { "http://192.168.1.5:8000/$it" }
-                existingKtpUrl = data.ktp_path?.let { "http://192.168.1.5:8000/$it" }
+                existingAvatarUrl = data.img_path?.let { "https://ritecs.org/sites/$it" }
+                existingKtpUrl = data.ktp_path?.let { "https://ritecs.org/sites/$it" }
             } catch (e: Exception) {
                 // error handle
             } finally {

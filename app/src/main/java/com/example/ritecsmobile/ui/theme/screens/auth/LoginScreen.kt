@@ -33,14 +33,14 @@ import com.example.ritecsmobile.data.remote.dto.LoginRequest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-// 💡 Warna Khas Ritecs
+//  Warna Khas Ritecs
 val RitecsDarkBlue = Color(0xFF004191)
 val RitecsLightBlue = Color(0xFF0091FF)
 val RitecsBlue = Color(0xFF0062CD)
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToOtp: (String) -> Unit
 ) {
@@ -151,7 +151,7 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 💡 TOMBOL LOGIN (DIBIKIN GRADASI BIRU KEREN)
+                        // 💡 TOMBOL LOGIN
                         Button(
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -161,9 +161,12 @@ fun LoginScreen(
                                             val response = RetrofitClient.authApi.login(LoginRequest(email, password))
                                             if (response.isSuccessful) {
                                                 val token = response.body()?.data?.token ?: ""
-                                                AuthPreferences(context).saveToken(token)
+                                                val role = response.body()?.data?.role ?: "user"
+
+                                                AuthPreferences(context).saveToken(token, role)
                                                 Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                                                onLoginSuccess()
+
+                                                onLoginSuccess(role)
                                             } else {
                                                 val errorBody = response.errorBody()?.string()
                                                 val jsonError = errorBody?.let { JSONObject(it) }
@@ -217,12 +220,9 @@ fun LoginScreen(
                     Text(" ATAU ", fontSize = 12.sp, color = Color(0xFF64748B), modifier = Modifier.padding(horizontal = 8.dp))
                     HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
                 }
-
                 Spacer(modifier = Modifier.height(24.dp))
-
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
                 var isGoogleLoading by remember { mutableStateOf(false) }
-
                 // TOMBOL GOOGLE KEMBALI WARNA NORMAL
                 OutlinedButton(
                     onClick = {
@@ -271,9 +271,12 @@ fun LoginScreen(
                                     val response = RetrofitClient.authApi.googleLogin(apiRequest)
                                     if (response.isSuccessful) {
                                         val token = response.body()?.data?.token ?: ""
-                                        AuthPreferences(context).saveToken(token)
+                                        val role = response.body()?.data?.role ?: "user"
+
+                                        AuthPreferences(context).saveToken(token, role)
                                         Toast.makeText(context, "Login Google Berhasil!", Toast.LENGTH_SHORT).show()
-                                        onLoginSuccess()
+
+                                        onLoginSuccess(role)
                                     } else {
                                         Toast.makeText(context, "Gagal sinkron ke server Ritecs.", Toast.LENGTH_SHORT).show()
                                     }

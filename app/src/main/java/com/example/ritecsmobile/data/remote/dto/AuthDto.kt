@@ -13,6 +13,7 @@ data class LoginResponse(
 
 data class LoginData(
     val user: UserDto,
+    val role: String,
     val token: String
 )
 // Data Class Tambahan untuk Auth

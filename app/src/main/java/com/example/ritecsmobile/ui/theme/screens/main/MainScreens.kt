@@ -28,7 +28,7 @@ import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.ui.screens.auth.LoginScreen
 import com.example.ritecsmobile.ui.screens.auth.RegisterScreen
-import com.example.ritecsmobile.ui.screens.auth.VerifyOtpScreen // 💡 Menggunakan VerifyOtpScreen sesuai nama fungsi aslimu
+import com.example.ritecsmobile.ui.screens.auth.VerifyOtpScreen
 import com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen
 import com.example.ritecsmobile.ui.screens.journal.JurnalScreen
 import com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen
@@ -41,19 +41,22 @@ fun MainScreen() {
     val bottomNavController = rememberNavController()
     val context = LocalContext.current
     val authPreferences = remember { AuthPreferences(context) }
+    val scope = rememberCoroutineScope()
+
+    // --- KONSTANTA WARNA ---
     val RitecsBlue = Color(0xFF0062CD)
-    val RitecsLightBlue = Color(0xFF2E86EB)
     val BackgroundSoft = Color(0xFFF5F6FA)
+
+    // --- STATE MANAGEMENT ---
     val token by authPreferences.authToken.collectAsState(initial = "")
     var selectedBook by remember { mutableStateOf<BookDto?>(null) }
     var selectedTraining by remember { mutableStateOf<com.example.ritecsmobile.data.remote.dto.TrainingDto?>(null) }
     var selectedHaki by remember { mutableStateOf<com.example.ritecsmobile.data.remote.dto.HakiPackageDto?>(null) }
+    var registeredEmail by remember { mutableStateOf("") }
+
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val mainTabs = listOf("home_tab", "buku_tab", "jurnal_tab", "profile_tab")
-
-    // 💡 State sementara untuk menyimpan email dari proses Register menuju OTP
-    var registeredEmail by remember { mutableStateOf("") }
 
     Scaffold(
         bottomBar = {
@@ -67,33 +70,91 @@ fun MainScreen() {
                 navController = bottomNavController,
                 startDestination = "splash_route"
             ) {
+
+                // 1. RUTE ONBOARDING & SPLASH
                 composable("splash_route") {
                     com.example.ritecsmobile.ui.screens.onboarding.SplashScreen(
                         onNavigateToOnboarding = {
-                            bottomNavController.navigate("onboarding_route") {
-                                popUpTo("splash_route") { inclusive = true }
+                            val hasSeenOnboarding = authPreferences.hasSeenOnboarding()
+
+                            if (hasSeenOnboarding) {
+                                bottomNavController.navigate("home_tab") {
+                                    popUpTo("splash_route") { inclusive = true }
+                                }
+                            } else {
+                                bottomNavController.navigate("onboarding_route") {
+                                    popUpTo("splash_route") { inclusive = true }
+                                }
                             }
                         }
                     )
                 }
 
-                // 💡 2. RUTE ONBOARDING
                 composable("onboarding_route") {
                     com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen(
                         onNavigateToLogin = {
+                            authPreferences.setOnboardingCompleted()
+
                             bottomNavController.navigate("login_route") {
                                 popUpTo("onboarding_route") { inclusive = true }
                             }
                         },
                         onNavigateToHome = {
+                            authPreferences.setOnboardingCompleted()
+
                             bottomNavController.navigate("home_tab") {
                                 popUpTo("onboarding_route") { inclusive = true }
                             }
                         }
-
                     )
                 }
-                // 1. Tab Beranda
+                // 2. RUTE AUTHENTICATION (LOGIN, REGIS, OTP)
+                composable("login_route") {
+                    LoginScreen(
+                        onLoginSuccess = { role ->
+                            // 💡 LOGIKA REDIRECT ROLE (Admin vs User)
+                            if (role.equals("Admin", ignoreCase = true)) {
+                                bottomNavController.navigate("admin_dashboard") {
+                                    popUpTo("login_route") { inclusive = true }
+                                }
+                            } else {
+                                bottomNavController.navigate("home_tab") {
+                                    popUpTo("login_route") { inclusive = true }
+                                }
+                            }
+                        },
+                        onNavigateToRegister = { bottomNavController.navigate("register_route") },
+                        onNavigateToOtp = { email ->
+                            registeredEmail = email
+                            bottomNavController.navigate("otp_route")
+                        }
+                    )
+                }
+
+                composable("register_route") {
+                    RegisterScreen(
+                        onRegisterSuccess = { email ->
+                            registeredEmail = email
+                            bottomNavController.navigate("otp_route")
+                        },
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+
+                composable("otp_route") {
+                    VerifyOtpScreen(
+                        email = registeredEmail,
+                        onVerifySuccess = {
+                            bottomNavController.navigate("home_tab") {
+                                popUpTo("login_route") { inclusive = true }
+                            }
+                        },
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
+                // ==========================================
+                // 3. TAB UTAMA USER (BOTTOM NAV)
+                // ==========================================
                 composable("home_tab") {
                     BerandaScreen(
                         onNavigate = { route ->
@@ -114,7 +175,6 @@ fun MainScreen() {
                     )
                 }
 
-                // 2. Tab BUKU
                 composable("buku_tab") {
                     com.example.ritecsmobile.ui.theme.screens.book.BukuScreen(
                         onNavigateToDetail = { book ->
@@ -127,18 +187,35 @@ fun MainScreen() {
                     )
                 }
 
-                composable("lihat_semua_buku/{section}") { backStackEntry ->
-                    val section = backStackEntry.arguments?.getString("section") ?: "Semua Buku"
-                    com.example.ritecsmobile.ui.theme.screens.book.LihatSemuaBukuScreen(
-                        sectionTitle = section,
-                        onNavigateBack = { bottomNavController.popBackStack() },
-                        onNavigateToDetail = { book ->
-                            selectedBook = book
-                            bottomNavController.navigate("detail_buku")
-                        }
-                    )
+                composable("jurnal_tab") {
+                    JurnalScreen()
                 }
 
+                composable("profile_tab") {
+                    if (token.isNullOrEmpty()) {
+                        LoginScreen(
+                            onLoginSuccess = { bottomNavController.navigate("home_tab") },
+                            onNavigateToRegister = { bottomNavController.navigate("register_route") },
+                            onNavigateToOtp = { bottomNavController.navigate("otp_route") }
+                        )
+                    } else {
+                        com.example.ritecsmobile.ui.screens.profile.ProfileScreen(
+                            onNavigate = { route -> bottomNavController.navigate(route) },
+                            onLogout = {
+                                scope.launch {
+                                    authPreferences.clearAuthToken()
+                                    bottomNavController.navigate("login_route") {
+                                        popUpTo(0)
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+
+                // ==========================================
+                // 4. RUTE DETAIL & LAYANAN (USER)
+                // ==========================================
                 composable("detail_buku") {
                     selectedBook?.let { book ->
                         com.example.ritecsmobile.ui.theme.screens.book.BookDetailScreen(
@@ -148,38 +225,15 @@ fun MainScreen() {
                     }
                 }
 
-                // 3. Tab JURNAL
-                composable("jurnal_tab") {
-                    JurnalScreen()
-                }
-
-                // 4. Tab PROFIL
-                composable("profile_tab") {
-                    if (token.isNullOrEmpty()) {
-                        LoginScreen(
-                            onLoginSuccess = { },
-                            onNavigateToRegister = { bottomNavController.navigate("register_route") },
-                            onNavigateToOtp = { bottomNavController.navigate("otp_route") }
-                        )
-                    } else {
-                        com.example.ritecsmobile.ui.screens.profile.ProfileScreen(
-                            onNavigate = { route -> bottomNavController.navigate(route) },
-                            onLogout = {
-                                kotlinx.coroutines.GlobalScope.launch {
-                                    authPreferences.clearAuthToken()
-                                }
-                            }
-                        )
-                    }
-                }
-
-                composable("login_route") {
-                    LoginScreen(
-                        onLoginSuccess = {
-                            bottomNavController.navigate("profile_tab") { popUpTo("home_tab") }
-                        },
-                        onNavigateToRegister = { bottomNavController.navigate("register_route") },
-                        onNavigateToOtp = { bottomNavController.navigate("otp_route") }
+                composable("lihat_semua_buku/{section}") { backStackEntry ->
+                    val section = backStackEntry.arguments?.getString("section") ?: "Semua Buku"
+                    com.example.ritecsmobile.ui.theme.screens.book.LihatSemuaBukuScreen(
+                        sectionTitle = section,
+                        onNavigateBack = { bottomNavController.popBackStack() },
+                        onNavigateToDetail = { book ->
+                            selectedBook = book
+                            bottomNavController.navigate("detail_buku")
+                        }
                     )
                 }
 
@@ -223,12 +277,9 @@ fun MainScreen() {
                         com.example.ritecsmobile.ui.screens.home.PelatihanDetailScreen(training = training, onNavigateBack = { bottomNavController.popBackStack() })
                     }
                 }
-                // 💡 NAMA ALAMATNYA HARUS SAMA PERSIS DENGAN YANG DIPANGGIL TOMBOL
                 composable("petunjuk_penulis") {
                     com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen(
-                        onNavigateBack = {
-                            bottomNavController.popBackStack()
-                        }
+                        onNavigateBack = { bottomNavController.popBackStack() }
                     )
                 }
                 composable("tentang_ritecs") {
@@ -241,30 +292,37 @@ fun MainScreen() {
                     com.example.ritecsmobile.ui.screens.home.KontakScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
-                // 💡 INI PERBAIKAN REGISTER
-                composable("register_route") {
-                    RegisterScreen(
-                        onRegisterSuccess = { email ->
-                            // 1. Simpan emailnya dulu
-                            registeredEmail = email
-                            // 2. Lempar ke halaman OTP
-                            bottomNavController.navigate("otp_route")
-                        },
-                        onNavigateBack = { bottomNavController.popBackStack() }
-                    )
-                }
-                composable("otp_route") {
-                    VerifyOtpScreen(
-                        email = registeredEmail,
-                        onVerifySuccess = {
-                            // Kalau OTP sukses, arahkan ke profil/home
-                            bottomNavController.navigate("profile_tab") {
-                                popUpTo("home_tab")
+                // ==========================================
+                // 5. RUTE ADMIN (DASHBOARD & MANAGEMENT)
+                // ==========================================
+                composable("admin_dashboard") {
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminDashboardScreen(
+                        onNavigate = { route -> bottomNavController.navigate(route) },
+                        onLogout = {
+                            scope.launch {
+                                authPreferences.clearAuthToken()
+                                bottomNavController.navigate("login_route") {
+                                    popUpTo(0) { inclusive = true }
+                                }
                             }
-                        },
-                        onNavigateBack = { bottomNavController.popBackStack() } // Tombol balik
+                        }
                     )
                 }
+
+                composable("admin_activation_requests") {
+                    // Screen Verifikasi Manual OTP
+                    // com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+
+                composable("admin_manage_users") {
+                    // Screen List User Admin
+                    // com.example.ritecsmobile.ui.theme.screens.admin.AdminUserListScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+
+                composable("admin_membership_transactions") {
+                    // Screen Approval Bayar Membership
+                }
+
             }
         }
     }

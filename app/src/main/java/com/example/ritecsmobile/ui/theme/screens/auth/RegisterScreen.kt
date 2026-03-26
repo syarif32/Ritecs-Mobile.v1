@@ -244,7 +244,9 @@ fun RegisterScreen(
 
                                     val response = RetrofitClient.authApi.googleLogin(apiRequest)
                                     if (response.isSuccessful) {
-                                        AuthPreferences(context).saveToken(response.body()?.data?.token ?: "")
+                                        val tokenDariServer = response.body()?.data?.token ?: ""
+                                        val roleDariServer = response.body()?.data?.role ?: "user"
+                                        AuthPreferences(context).saveToken(tokenDariServer, roleDariServer)
                                         Toast.makeText(context, "Berhasil Login dengan Google!", Toast.LENGTH_SHORT).show()
                                         onRegisterSuccess(googleIdTokenCredential.id)
                                     } else Toast.makeText(context, "Gagal sinkron server", Toast.LENGTH_SHORT).show()
