@@ -118,8 +118,8 @@ fun ProfileSettingsScreen(
                 institution = data.institution ?: ""
                 email = data.email ?: ""
 
-                existingAvatarUrl = data.img_path?.let { "ttp://192.168.1.3:8000/$it" }
-                existingKtpUrl = data.ktp_path?.let { "ttp://192.168.1.3:8000/$it" }
+                existingAvatarUrl = data.img_path?.let { "http://192.168.1.5:8000/$it" }
+                existingKtpUrl = data.ktp_path?.let { "http://192.168.1.5:8000/$it" }
             } catch (e: Exception) {
                 // error handle
             } finally {
@@ -162,7 +162,7 @@ fun ProfileSettingsScreen(
                         .size(110.dp)
                         .clip(CircleShape)
                         .background(Color.LightGray)
-                        .border(3.dp, Color.White, CircleShape) // Border luar putih
+                        .border(3.dp, Color.White, CircleShape)
                         .clickable { avatarPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     contentAlignment = Alignment.Center
                 ) {

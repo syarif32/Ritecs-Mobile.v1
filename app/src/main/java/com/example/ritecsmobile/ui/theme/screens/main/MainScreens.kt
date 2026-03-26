@@ -29,6 +29,7 @@ import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.ui.screens.auth.LoginScreen
 import com.example.ritecsmobile.ui.screens.auth.RegisterScreen
 import com.example.ritecsmobile.ui.screens.auth.VerifyOtpScreen // 💡 Menggunakan VerifyOtpScreen sesuai nama fungsi aslimu
+import com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen
 import com.example.ritecsmobile.ui.screens.journal.JurnalScreen
 import com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen
 import com.example.ritecsmobile.ui.screens.onboarding.SplashScreen
@@ -89,21 +90,28 @@ fun MainScreen() {
                                 popUpTo("onboarding_route") { inclusive = true }
                             }
                         }
+
                     )
                 }
                 // 1. Tab Beranda
                 composable("home_tab") {
-                    BerandaScreen(onNavigate = { route ->
-                        if (route in mainTabs) {
-                            bottomNavController.navigate(route) {
-                                popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
-                                launchSingleTop = true
-                                restoreState = true
+                    BerandaScreen(
+                        onNavigate = { route ->
+                            if (route in mainTabs) {
+                                bottomNavController.navigate(route) {
+                                    popUpTo(bottomNavController.graph.findStartDestination().id) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            } else {
+                                bottomNavController.navigate(route)
                             }
-                        } else {
-                            bottomNavController.navigate(route)
+                        },
+                        onNavigateToBookDetail = { book ->
+                            selectedBook = book
+                            bottomNavController.navigate("detail_buku")
                         }
-                    })
+                    )
                 }
 
                 // 2. Tab BUKU
@@ -215,8 +223,13 @@ fun MainScreen() {
                         com.example.ritecsmobile.ui.screens.home.PelatihanDetailScreen(training = training, onNavigateBack = { bottomNavController.popBackStack() })
                     }
                 }
+                // 💡 NAMA ALAMATNYA HARUS SAMA PERSIS DENGAN YANG DIPANGGIL TOMBOL
                 composable("petunjuk_penulis") {
-                    com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen()
+                    com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen(
+                        onNavigateBack = {
+                            bottomNavController.popBackStack()
+                        }
+                    )
                 }
                 composable("tentang_ritecs") {
                     com.example.ritecsmobile.ui.screens.profile.TentangScreen(onNavigateBack = { bottomNavController.popBackStack() })

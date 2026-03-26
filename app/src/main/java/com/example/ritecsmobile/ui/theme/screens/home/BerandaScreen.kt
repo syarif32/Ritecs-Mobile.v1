@@ -22,12 +22,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush // 💡 INI YANG BIKIN ERROR (TADI KELUPAAN DI IMPORT)
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource // 💡 INI DITAMBAHKAN UNTUK MEMBACA DRAWABLE
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.ritecsmobile.R // 💡 INI DITAMBAHKAN UNTUK MENGAKSES FOLDER DRAWABLE
+import com.example.ritecsmobile.R
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.data.remote.dto.JournalDto
@@ -47,7 +47,11 @@ val BackgroundSoft = Color(0xFFF8FAFC)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun BerandaScreen(onNavigate: (String) -> Unit) {
+// 💡 PERBAIKAN 1: Tambah parameter onNavigateToBookDetail biar bisa langsung lompat ke detail buku
+fun BerandaScreen(
+    onNavigate: (String) -> Unit,
+    onNavigateToBookDetail: (BookDto) -> Unit = {}
+) {
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
@@ -72,11 +76,10 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
         }
     }
 
-    // 💡 Banner Promo (DIUBAH MENJADI MENGAMBIL DARI DRAWABLE)
+    // Banner Promo
     val promoBanners = listOf(
         PromoBannerDrawable(R.drawable.banner1, "https://ritecs.org"),
-        PromoBannerDrawable(R.drawable.banner2, "https://ritecs.org"),
-        // Tambahkan banner3 jika ada, jika belum biarkan 2 saja
+        PromoBannerDrawable(R.drawable.banner2, "https://ritecs.org")
     )
     val pagerState = rememberPagerState(pageCount = { promoBanners.size })
 
@@ -100,7 +103,6 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
                     modifier = Modifier.fillMaxWidth()
                 ) { page ->
                     val banner = promoBanners[page]
-                    // 💡 DIUBAH DARI AsyncImage MENJADI Image BAWAAN COMPOSE
                     androidx.compose.foundation.Image(
                         painter = painterResource(id = banner.imageResId),
                         contentDescription = "Promo Banner",
@@ -167,14 +169,18 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(latestBooks) { book ->
-                        val imageUrl = "$BASE_URL_BE/${book.cover_path?.trimStart('/') ?: ""}"
+                        // 💡 PERBAIKAN 2: URL Image diperbaiki agar tidak double slash dan ada default gambarnya!
+                        val imagePath = book.cover_path?.trimStart('/') ?: "assets/published/books/book_default.png"
+                        val imageUrl = BASE_URL_BE + imagePath
+
                         val priceText = if (book.print_price != null && book.print_price > 0) formatToRupiah(book.print_price) else "GRATIS"
                         val priceColor = if (priceText == "GRATIS") Color(0xFF27AE60) else Color.DarkGray
                         val author = book.writers?.joinToString(", ") { it.name } ?: "Ritecs"
 
                         HomeVerticalCard(
                             title = book.title, subtitle = author, label = "🏷️ BUKU", tagColor = Color(0xFF1976D2),
-                            imageUrl = imageUrl, priceText = priceText, priceColor = priceColor, onClick = { onNavigate("buku_tab") }
+                            imageUrl = imageUrl, priceText = priceText, priceColor = priceColor,
+                            onClick = { onNavigateToBookDetail(book) } // 💡 Lompat langsung ke detail buku!
                         )
                     }
                 }
@@ -187,12 +193,16 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     items(latestJournals) { journal ->
-                        val imageUrl = "$BASE_URL_BE/${journal.cover_path?.trimStart('/') ?: ""}"
+                        // 💡 PERBAIKAN 3: URL Jurnal juga diperbaiki!
+                        val imagePath = journal.cover_path?.trimStart('/') ?: ""
+                        val imageUrl = BASE_URL_BE + imagePath
+
                         val keywords = journal.keywords?.joinToString(", ") { it.name } ?: "Jurnal Ilmiah"
 
                         HomeVerticalCard(
                             title = journal.title, subtitle = keywords, label = "🏷️ JURNAL", tagColor = Color(0xFF27AE60),
-                            imageUrl = imageUrl, priceText = "Buka Portal", priceColor = RitecsBlue, onClick = {
+                            imageUrl = imageUrl, priceText = "Buka Portal", priceColor = RitecsBlue,
+                            onClick = {
                                 if (!journal.url_path.isNullOrEmpty()) {
                                     context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(journal.url_path)))
                                 }
@@ -205,12 +215,60 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
             Spacer(modifier = Modifier.height(100.dp))
         }
 
-        // --- 2. STICKY TOP BAR LAYER (HEADER SEARCH BAR) ---
+        //            Box(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .statusBarsPadding()
+//                    .padding(horizontal = 20.dp),
+////                    .offset(y = (-15).dp),
+//
+//                contentAlignment = Alignment.Center
+//            ) {
+//
+//
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+//                ) {
+//                    // Search Bar White
+//                    Surface(
+//                        shape = RoundedCornerShape(24.dp),
+//                        color = Color.White,
+//                        modifier = Modifier.weight(1f).height(50.dp),
+//                        shadowElevation = 2.dp
+//                    ) {
+//                        OutlinedTextField(
+//                            value = searchQuery, onValueChange = { searchQuery = it },
+//                            placeholder = { Text("Cari buku, jurnal, dll...", color = Color.Gray, fontSize = 13.sp) },
+//                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = RitecsBlue, modifier = Modifier.size(20.dp)) },
+//                            colors = OutlinedTextFieldDefaults.colors(
+//                                focusedBorderColor = Color.Transparent,
+//                                unfocusedBorderColor = Color.Transparent,
+//                                cursorColor = RitecsBlue
+//                            ),
+//                            singleLine = true, modifier = Modifier.fillMaxSize()
+//                        )
+//                    }
+//
+//                    // Profile Icon White
+//                    Surface(
+//                        shape = CircleShape,
+//                        color = Color.White,
+//                        modifier = Modifier.size(46.dp).clickable { onNavigate("profile_tab") },
+//                        shadowElevation = 2.dp
+//                    ) {
+//                        Box(contentAlignment = Alignment.Center) {
+//                            Icon(Icons.Default.Person, contentDescription = "Akun", tint = RitecsBlue, modifier = Modifier.size(24.dp))
+//                        }
+//                    }
+//                }
+//            }
+        val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+
         Box(
             modifier = Modifier
-//                .padding(bottom = 10.dp)
                 .fillMaxWidth()
-                .height(80.dp)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -219,53 +277,58 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
                         )
                     )
                 )
+                .padding(top = statusBarHeight, bottom = 12.dp)
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .statusBarsPadding()
-                    .padding(horizontal = 20.dp)
-                    .offset(y = (-15).dp),
-
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                // Custom Search Bar Anti-Kegencet
+                Surface(
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color.White,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(50.dp),
+                    shadowElevation = 0.dp
                 ) {
-                    // Search Bar White
-                    Surface(
-                        shape = RoundedCornerShape(24.dp),
-                        color = Color.White,
-                        modifier = Modifier.weight(1f).height(46.dp),
-                        shadowElevation = 2.dp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 16.dp).fillMaxSize()
                     ) {
-                        OutlinedTextField(
-                            value = searchQuery, onValueChange = { searchQuery = it },
-                            placeholder = { Text("Cari buku, jurnal, dll...", color = Color.Gray, fontSize = 13.sp) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = RitecsBlue, modifier = Modifier.size(20.dp)) },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.Transparent,
-                                unfocusedBorderColor = Color.Transparent,
-                                cursorColor = RitecsBlue
-                            ),
-                            singleLine = true, modifier = Modifier.fillMaxSize()
-                        )
-                    }
+                        Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray, modifier = Modifier.size(20.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
-                    // Profile Icon White
-                    Surface(
-                        shape = CircleShape,
-                        color = Color.White,
-                        modifier = Modifier.size(46.dp).clickable { onNavigate("profile_tab") },
-                        shadowElevation = 2.dp
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(Icons.Default.Person, contentDescription = "Akun", tint = RitecsBlue, modifier = Modifier.size(24.dp))
+                        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                            if (searchQuery.isEmpty()) {
+                                Text("Cari buku, jurnal, dll...", color = Color.Gray, fontSize = 14.sp)
+                            }
+                            androidx.compose.foundation.text.BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = Color.Black),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
                         }
+                    }
+                }
+
+                // Profile Icon
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    modifier = Modifier
+                        .size(50.dp)
+                        .clickable { onNavigate("profile_tab") },
+                    shadowElevation = 0.dp
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Person, contentDescription = "Akun", tint = RitecsBlue, modifier = Modifier.size(24.dp))
                     }
                 }
             }
@@ -275,7 +338,6 @@ fun BerandaScreen(onNavigate: (String) -> Unit) {
 
 // --- HELPER COMPOSABLES ---
 
-// 💡 Data class baru khusus untuk Drawable
 data class PromoBannerDrawable(val imageResId: Int, val linkUrl: String)
 
 @Composable
