@@ -52,6 +52,9 @@ data class GoogleLoginRequest(
     val last_name: String?,
     val img_path: String?
 )
+data class PasswordConfirmRequest(
+    val admin_password: String
+)
 data class BaseResponse(
     val status: String,
     val message: String

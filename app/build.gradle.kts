@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -84,4 +86,8 @@ dependencies {
 //    notif
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-messaging")
+//    admin panel
+    implementation ("androidx.compose.material:material-icons-extended:1.6.0")
+
+
 }

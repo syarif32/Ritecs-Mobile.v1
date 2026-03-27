@@ -1,5 +1,6 @@
 package com.example.ritecsmobile.ui.screens.main
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.ritecsmobile.data.local.AuthPreferences
+import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.BookDto
 import com.example.ritecsmobile.ui.screens.auth.LoginScreen
 import com.example.ritecsmobile.ui.screens.auth.RegisterScreen
@@ -42,6 +44,7 @@ fun MainScreen() {
     val context = LocalContext.current
     val authPreferences = remember { AuthPreferences(context) }
     val scope = rememberCoroutineScope()
+    val hasSeenOnboarding by authPreferences.hasSeenOnboarding.collectAsState(initial = false)
 
     // --- KONSTANTA WARNA ---
     val RitecsBlue = Color(0xFF0062CD)
@@ -71,12 +74,12 @@ fun MainScreen() {
                 startDestination = "splash_route"
             ) {
 
+                // ==========================================
                 // 1. RUTE ONBOARDING & SPLASH
+                // ==========================================
                 composable("splash_route") {
                     com.example.ritecsmobile.ui.screens.onboarding.SplashScreen(
                         onNavigateToOnboarding = {
-                            val hasSeenOnboarding = authPreferences.hasSeenOnboarding()
-
                             if (hasSeenOnboarding) {
                                 bottomNavController.navigate("home_tab") {
                                     popUpTo("splash_route") { inclusive = true }
@@ -93,15 +96,17 @@ fun MainScreen() {
                 composable("onboarding_route") {
                     com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen(
                         onNavigateToLogin = {
-                            authPreferences.setOnboardingCompleted()
-
+                            scope.launch {
+                                authPreferences.setOnboardingCompleted()
+                            }
                             bottomNavController.navigate("login_route") {
                                 popUpTo("onboarding_route") { inclusive = true }
                             }
                         },
                         onNavigateToHome = {
-                            authPreferences.setOnboardingCompleted()
-
+                            scope.launch {
+                                authPreferences.setOnboardingCompleted()
+                            }
                             bottomNavController.navigate("home_tab") {
                                 popUpTo("onboarding_route") { inclusive = true }
                             }
@@ -292,11 +297,29 @@ fun MainScreen() {
                     com.example.ritecsmobile.ui.screens.home.KontakScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
-                // ==========================================
+
                 // 5. RUTE ADMIN (DASHBOARD & MANAGEMENT)
-                // ==========================================
                 composable("admin_dashboard") {
+                    // State untuk menyimpan data statistik
+                    var dashboardData by remember { mutableStateOf<com.example.ritecsmobile.data.remote.dto.AdminDashboardData?>(null) }
+                    LaunchedEffect(token) {
+                        if (!token.isNullOrEmpty()) {
+                            try {
+                                val response = RetrofitClient.authApi.getAdminDashboardStats("Bearer $token")
+
+                                if (response.isSuccessful) {
+                                    dashboardData = response.body()?.data
+                                } else {
+                                    Log.e("AdminDashboard", "Error: ${response.errorBody()?.string()}")
+                                }
+                            } catch (e: Exception) {
+                                Log.e("AdminDashboard", "Exception: ${e.message}")
+                            }
+                        }
+                    }
+
                     com.example.ritecsmobile.ui.theme.screens.admin.AdminDashboardScreen(
+
                         onNavigate = { route -> bottomNavController.navigate(route) },
                         onLogout = {
                             scope.launch {
@@ -311,16 +334,35 @@ fun MainScreen() {
 
                 composable("admin_activation_requests") {
                     // Screen Verifikasi Manual OTP
-                    // com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                  com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
                 composable("admin_manage_users") {
                     // Screen List User Admin
                     // com.example.ritecsmobile.ui.theme.screens.admin.AdminUserListScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
+                composable("admin_manage_roles"){
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminManageRolesScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+
 
                 composable("admin_membership_transactions") {
-                    // Screen Approval Bayar Membership
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminMembershipScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+                composable("admin_manage_banks") {
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminBankScreen (onNavigateBack = { bottomNavController.popBackStack() })
+                }
+                composable("admin_manage_users") {
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminUserManageScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+                composable("admin_manage_books") {
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminManageBooksScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+                composable("admin_manage_journals") {
+                    com.example.ritecsmobile.ui.theme.screens.admin.AdminManageJournalsScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
+                composable("admin_manage_awardings") {
+
                 }
 
             }

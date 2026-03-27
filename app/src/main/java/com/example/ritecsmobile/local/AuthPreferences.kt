@@ -2,6 +2,7 @@ package com.example.ritecsmobile.data.local
 
 import android.content.Context
 import androidx.datastore.dataStore
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -16,6 +17,7 @@ class AuthPreferences(private val context: Context) {
     companion object {
         val TOKEN_KEY = stringPreferencesKey("auth_token")
         val USER_ROLE = stringPreferencesKey("user_role")
+        private val ONBOARDING_KEY = booleanPreferencesKey("has_seen_onboarding")
     }
 
 
@@ -42,13 +44,12 @@ class AuthPreferences(private val context: Context) {
             preferences.remove(USER_ROLE)
         }
     }
-    fun setOnboardingCompleted() {
-        val editor = sharedPreferences.edit()
-        editor.putBoolean("has_seen_onboarding", true)
-        editor.apply()
+    suspend fun setOnboardingCompleted() {
+        context.dataStore.edit { preferences ->
+            preferences[ONBOARDING_KEY] = true
+        }
     }
-
-    fun hasSeenOnboarding(): Boolean {
-        return sharedPreferences.getBoolean("has_seen_onboarding", false)
+    val hasSeenOnboarding: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[ONBOARDING_KEY] ?: false
     }
 }

@@ -32,3 +32,152 @@ data class AdminActionResponse(
     val status: String,
     val message: String
 )
+// File: com.example.ritecsmobile.data.remote.dto.AdminDashboardDto.kt
+
+data class AdminDashboardResponse(
+    val status: String,
+    val data: AdminDashboardData
+)
+
+data class AdminDashboardData(
+    // Revenue Stats
+    val totalRevenue: Long,
+    val monthlyGrowth: Double,
+    val successRate: Double,
+    val revenueGrowth: Double,
+    val todayRevenue: Long,
+
+    // Content Stats
+    val totalContent: Int,
+    val totalBooks: Int,
+    val totalJournals: Int,
+    val totalWriters: Int,
+
+    // User Stats
+    val totalUsers: Int,
+    val activeMemberships: Int,
+    val regularUsers: Int,
+
+    // Recent Transactions
+    val recentTransactions: List<TransactionDto>
+)
+
+data class TransactionDto(
+    val id: Int,
+    val user_name: String,
+    val amount: Long,
+    val status: String,
+    val created_at: String
+)
+// File DTO
+data class MembershipTransactionResponse(
+    val status: String,
+    val data: List<MembershipTransactionDto>
+)
+
+data class MembershipTransactionDto(
+    val id: Int,
+    val user_name: String,
+    val email: String,
+    val bank_name: String,
+    val sender_name: String,
+    val bank_account_number: String?,
+    val bank_account_name: String?,
+    val amount: Long,
+    val status: String,
+    val type: String,
+    val proof_url: String?,
+    val created_at: String,
+    val is_extended: Int
+)
+
+data class UpdateTransactionStatusRequest(
+    val status: String // "paid", "pending", atau "rejected"
+)
+data class RoleManageResponse(
+    val status: String,
+    val data: List<RoleManageUserDto>
+)
+
+data class RoleManageUserDto(
+    val user_id: Int,
+    val name: String,
+    val email: String,
+    val role: String
+)
+//bank
+data class AdminBankResponse(
+    val status: String,
+    val data: List<AdminBankDto>
+)
+
+data class AdminBankDto(
+    val id: Int,
+    val bank_name: String,
+    val account_name: String,
+    val account_number: String
+)
+
+data class BankRequest(
+    val bank_name: String,
+    val account_name: String,
+    val account_number: String
+)
+data class AdminUserManageResponse(
+    val status: String,
+    val data: List<AdminUserManageDto>
+)
+
+data class AdminUserManageDto(
+    val user_id: Int,
+    val name: String,
+    val email: String,
+    val phone: String?,
+    val is_member: Boolean,
+    val member_number: String?,
+    val img_path: String?
+)
+
+data class MakeMemberRequest(
+    val member_number: String,
+    val start_date: String,
+    val end_date: String
+)
+//publish buku
+data class AdminBookResponse(val status: String, val data: List<AdminBookDto>)
+data class AdminBookDto(
+    val book_id: Int,
+    val title: String,
+    val synopsis: String?,
+    val publisher: String?,
+    val isbn: String?,
+    val publish_date: String?,
+    val cover_path: String?,
+    val ebook_path: String?,
+    val pages: Int?,
+    val width: Double?,
+    val length: Double?,
+    val thickness: Double?,
+    val print_price: Long?,
+    val ebook_price: Long?,
+    val categories: List<IdNameDto>,
+    val writers: List<IdNameDto>
+)
+
+data class IdNameDto(val id: Int, val name: String)
+
+data class BookFormDataResponse(val status: String, val data: BookFormData)
+data class BookFormData(val categories: List<IdNameDto>, val writers: List<IdNameDto>)
+//jurnal
+data class AdminJournalResponse(val status: String, val data: List<AdminJournalDto>)
+
+data class AdminJournalDto(
+    val journal_id: Int,
+    val title: String,
+    val url_path: String?,
+    val cover_path: String?,
+    val keywords: List<IdNameDto>
+)
+
+data class JournalFormDataResponse(val status: String, val data: JournalFormData)
+data class JournalFormData(val keywords: List<IdNameDto>)

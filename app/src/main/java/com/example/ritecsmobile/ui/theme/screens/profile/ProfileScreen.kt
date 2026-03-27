@@ -36,8 +36,16 @@ fun ProfileScreen(
 ) {
     val context = LocalContext.current
     val authPreferences = remember { AuthPreferences(context) }
+
+    // 💡 AMBIL DATA TOKEN & ROLE DARI PREFERENCES
     val token by authPreferences.authToken.collectAsState(initial = "")
+
+    // Asumsi: Di AuthPreferences kamu sudah ada variabel Flow untuk userRole
+    // Jika namanya beda, silakan disesuaikan (misal: role)
+    val userRole by authPreferences.userRole.collectAsState(initial = "user")
+
     val isLoggedIn = !token.isNullOrEmpty()
+    val isAdmin = userRole.equals("Admin", ignoreCase = true) // 💡 PENGECEKAN ADMIN
 
     var userData by remember { mutableStateOf<UserProfileDataDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
@@ -135,7 +143,17 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("$firstName $lastName", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color.Black)
+                            // 💡 Tambahkan label Admin di samping nama jika dia Admin
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("$firstName $lastName", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color.Black)
+                                if (isAdmin) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(color = Color(0xFFE74C3C), shape = RoundedCornerShape(4.dp)) {
+                                        Text("ADMIN", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+                                    }
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(4.dp))
 
                             if (userData?.is_member == true) {
@@ -217,6 +235,28 @@ fun ProfileScreen(
                 .padding(horizontal = 20.dp)
                 .offset(y = (-40).dp)
         ) {
+
+            // 💡 --- GRUP KHUSUS ADMIN (HANYA MUNCUL JIKA ROLE == ADMIN) ---
+            if (isLoggedIn && isAdmin) {
+                Text("Administrator", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE74C3C), modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White,
+                    shadowElevation = 2.dp,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column {
+                        MenuListItem(
+                            icon = Icons.Default.Dashboard,
+                            iconTint = Color(0xFFE74C3C),
+                            title = "Masuk Dashboard Admin",
+                            onClick = { onNavigate("admin_dashboard") }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
             // --- GRUP 1: AKUN & TRANSAKSI ---
             if (isLoggedIn) {
                 Text("Akun & Transaksi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
@@ -273,8 +313,6 @@ fun ProfileScreen(
         }
     }
 }
-
-// Komponen Baris Menu Dipercantik
 @Composable
 fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () -> Unit) {
     Row(
@@ -284,7 +322,6 @@ fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () 
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon dibungkus kotak melengkung (Soft Background)
         Box(
             modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(iconTint.copy(alpha = 0.1f)),
             contentAlignment = Alignment.Center
