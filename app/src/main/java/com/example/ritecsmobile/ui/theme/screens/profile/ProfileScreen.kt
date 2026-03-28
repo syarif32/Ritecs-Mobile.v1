@@ -39,13 +39,10 @@ fun ProfileScreen(
 
     // 💡 AMBIL DATA TOKEN & ROLE DARI PREFERENCES
     val token by authPreferences.authToken.collectAsState(initial = "")
-
-    // Asumsi: Di AuthPreferences kamu sudah ada variabel Flow untuk userRole
-    // Jika namanya beda, silakan disesuaikan (misal: role)
     val userRole by authPreferences.userRole.collectAsState(initial = "user")
 
     val isLoggedIn = !token.isNullOrEmpty()
-    val isAdmin = userRole.equals("Admin", ignoreCase = true) // 💡 PENGECEKAN ADMIN
+    val isAdmin = userRole.equals("Admin", ignoreCase = true)
 
     var userData by remember { mutableStateOf<UserProfileDataDto?>(null) }
     var isLoading by remember { mutableStateOf(false) }
@@ -74,15 +71,14 @@ fun ProfileScreen(
         "G"
     }
 
-    // Siapkan URL Foto Profil (Avatar)
     val avatarUrl = userData?.img_path?.let { path ->
         BASE_URL_BE + path.trimStart('/')
     }
 
-    // 💡 Warna Tema Ritecs
+    // 💡 WARNA TEMA BARU (GAYA ADMIN PREMIUM)
+    val AdminDark = Color(0xFF1A303A)
     val ritecsBlue = Color(0xFF0062CD)
-    val ritecsLightBlue = Color(0xFF2E86EB)
-    val backgroundSoft = Color(0xFFF5F6FA)
+    val backgroundSoft = Color(0xFFF4F6F7)
 
     Column(
         modifier = Modifier
@@ -90,18 +86,22 @@ fun ProfileScreen(
             .background(backgroundSoft)
             .verticalScroll(rememberScrollState())
     ) {
-        // 1. HEADER MELENGKUNG GRADASI BIRU RITECS
+        // ==========================================
+        // 1. HEADER MELENGKUNG (GRADASI ADMIN DARK)
+        // ==========================================
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
                 .background(
-                    brush = Brush.verticalGradient(colors = listOf(ritecsBlue, ritecsLightBlue)),
+                    brush = Brush.verticalGradient(colors = listOf(AdminDark, ritecsBlue)),
                     shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
                 )
         )
 
-        // 2. KARTU IDENTITAS MELAYANG
+        // ==========================================
+        // 2. KARTU IDENTITAS (TIDAK DIUBAH SAMA SEKALI)
+        // ==========================================
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -228,7 +228,9 @@ fun ProfileScreen(
             }
         }
 
-        // 3. DAFTAR MENU (GROUPED MODERN)
+        // ==========================================
+        // 3. DAFTAR MENU (GROUPED MODERN DENGAN TEMA ADMIN)
+        // ==========================================
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -236,13 +238,13 @@ fun ProfileScreen(
                 .offset(y = (-40).dp)
         ) {
 
-            // 💡 --- GRUP KHUSUS ADMIN (HANYA MUNCUL JIKA ROLE == ADMIN) ---
+            // --- GRUP KHUSUS ADMIN ---
             if (isLoggedIn && isAdmin) {
-                Text("Administrator", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE74C3C), modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
-                Surface(
+                Text("Administrator", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFE74C3C), modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                Card(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    shadowElevation = 2.dp,
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column {
@@ -259,78 +261,82 @@ fun ProfileScreen(
 
             // --- GRUP 1: AKUN & TRANSAKSI ---
             if (isLoggedIn) {
-                Text("Akun & Transaksi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
-                Surface(
+                Text("Akun & Transaksi", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = AdminDark, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+                Card(
                     shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    shadowElevation = 2.dp,
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column {
-                        MenuListItem(icon = Icons.Default.Lock, iconTint = ritecsBlue, title = "Keamanan Akun", onClick = { onNavigate("profile_settings") })
-                        HorizontalDivider(color = Color(0xFFF0F0F0), modifier = Modifier.padding(horizontal = 16.dp))
-                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = ritecsBlue, title = "Riwayat Transaksi", onClick = { /* TODO */ })
-                        HorizontalDivider(color = Color(0xFFF0F0F0), modifier = Modifier.padding(horizontal = 16.dp))
-                        MenuListItem(icon = Icons.Default.CardGiftcard, iconTint = ritecsBlue, title = "Member Benefit", onClick = { onNavigate("benefit_member") })
+                        MenuListItem(icon = Icons.Default.Lock, iconTint = AdminDark, title = "Keamanan Akun", onClick = { onNavigate("profile_settings") })
+                        HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
+                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = AdminDark, title = "Riwayat Transaksi", onClick = { /* TODO */ })
+                        HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
+                        MenuListItem(icon = Icons.Default.CardGiftcard, iconTint = AdminDark, title = "Member Benefit", onClick = { onNavigate("benefit_member") })
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
             // --- GRUP 2: BANTUAN & INFO ---
-            Text("Bantuan & Informasi", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Gray, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
-            Surface(
+            Text("Bantuan & Informasi", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = AdminDark, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
+            Card(
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                shadowElevation = 2.dp,
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column {
                     MenuListItem(icon = Icons.Default.Info, iconTint = Color(0xFFE67E22), title = "Tentang Ritecs", onClick = { onNavigate("tentang_ritecs") })
-                    HorizontalDivider(color = Color(0xFFF0F0F0), modifier = Modifier.padding(horizontal = 16.dp))
+                    HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
                     MenuListItem(icon = Icons.Default.Phone, iconTint = Color(0xFF27AE60), title = "Hubungi Kami", onClick = { onNavigate("kontak") })
-                    HorizontalDivider(color = Color(0xFFF0F0F0), modifier = Modifier.padding(horizontal = 16.dp))
-                    MenuListItem(icon = Icons.Default.HelpOutline, iconTint = Color(0xFFE74C3C), title = "Pusat Bantuan", onClick = { onNavigate("pusat_bantuan") })
+                    HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
+                    MenuListItem(icon = Icons.Default.HelpOutline, iconTint = ritecsBlue, title = "Pusat Bantuan", onClick = { onNavigate("pusat_bantuan") })
                 }
             }
 
-            // --- TOMBOL KELUAR ---
+            // --- TOMBOL KELUAR (ELEGAN & TEGAS) ---
             if (isLoggedIn) {
                 Spacer(modifier = Modifier.height(36.dp))
                 Button(
                     onClick = onLogout,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color(0xFFE74C3C)),
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color(0xFFD32F2F)),
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Keluar Akun", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Keluar Akun", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
                 }
             }
             Spacer(modifier = Modifier.height(60.dp)) // Jarak napas untuk Bottom Navbar
         }
     }
 }
+
+// ==========================================
+// KOMPONEN LIST MENU ELEGAN
+// ==========================================
 @Composable
 fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 18.dp), // Padding sedikit diperbesar biar lega
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(iconTint.copy(alpha = 0.1f)),
+            modifier = Modifier.size(38.dp).clip(RoundedCornerShape(10.dp)).background(iconTint.copy(alpha = 0.08f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
         }
 
         Spacer(modifier = Modifier.width(16.dp))
-        Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black, modifier = Modifier.weight(1f))
-        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.LightGray)
+        Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2C3E50), modifier = Modifier.weight(1f))
+        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFFCBD5E1))
     }
 }
