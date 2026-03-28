@@ -18,6 +18,7 @@ class AuthPreferences(private val context: Context) {
         val TOKEN_KEY = stringPreferencesKey("auth_token")
         val USER_ROLE = stringPreferencesKey("user_role")
         private val ONBOARDING_KEY = booleanPreferencesKey("has_seen_onboarding")
+        private val IS_DARK_MODE_KEY = booleanPreferencesKey("is_dark_mode")
     }
 
 
@@ -51,5 +52,13 @@ class AuthPreferences(private val context: Context) {
     }
     val hasSeenOnboarding: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[ONBOARDING_KEY] ?: false
+    }
+    suspend fun setDarkMode(isDark: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[IS_DARK_MODE_KEY] = isDark
+        }
+    }
+    val isDarkMode: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[IS_DARK_MODE_KEY] ?: false
     }
 }

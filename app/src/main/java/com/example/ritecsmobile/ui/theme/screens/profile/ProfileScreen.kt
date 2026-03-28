@@ -14,12 +14,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -27,7 +29,8 @@ import coil.request.ImageRequest
 import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.UserProfileDataDto
-import com.example.ritecsmobile.ui.theme.screens.book.BASE_URL_BE // 💡 Import URL Dinamis
+import com.example.ritecsmobile.ui.theme.screens.book.BASE_URL_BE
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
@@ -35,11 +38,13 @@ fun ProfileScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope() // 💡 Tambahan scope untuk menyimpan setting Dark Mode
     val authPreferences = remember { AuthPreferences(context) }
 
-    // 💡 AMBIL DATA TOKEN & ROLE DARI PREFERENCES
+    // 💡 AMBIL DATA TOKEN, ROLE, & TEMA DARI PREFERENCES
     val token by authPreferences.authToken.collectAsState(initial = "")
     val userRole by authPreferences.userRole.collectAsState(initial = "user")
+    val isDarkMode by authPreferences.isDarkMode.collectAsState(initial = false) // 💡 State Tema Gelap
 
     val isLoggedIn = !token.isNullOrEmpty()
     val isAdmin = userRole.equals("Admin", ignoreCase = true)
@@ -106,7 +111,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .offset(y = (-60).dp), // Ditarik ke atas agar melayang
+                .offset(y = (-60).dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             shape = RoundedCornerShape(16.dp)
@@ -117,10 +122,7 @@ fun ProfileScreen(
                         CircularProgressIndicator(color = ritecsBlue)
                     }
                 } else if (isLoggedIn && userData != null) {
-                    // TAMPILAN JIKA SUDAH LOGIN
                     Row(verticalAlignment = Alignment.CenterVertically) {
-
-                        // FOTO PROFIL (AVATAR) ATAU INISIAL
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
@@ -143,7 +145,6 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Column(modifier = Modifier.weight(1f)) {
-                            // 💡 Tambahkan label Admin di samping nama jika dia Admin
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text("$firstName $lastName", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp, color = Color.Black)
                                 if (isAdmin) {
@@ -177,7 +178,6 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Tombol Aksi Profil
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedButton(
                             onClick = { onNavigate("profile_settings") },
@@ -203,7 +203,6 @@ fun ProfileScreen(
                         }
                     }
                 } else {
-                    // TAMPILAN GUEST
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(64.dp).clip(CircleShape).background(Color.LightGray), contentAlignment = Alignment.Center) {
                             Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(36.dp))
@@ -270,9 +269,24 @@ fun ProfileScreen(
                 ) {
                     Column {
                         MenuListItem(icon = Icons.Default.Lock, iconTint = AdminDark, title = "Keamanan Akun", onClick = { onNavigate("profile_settings") })
-                        HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
-                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = AdminDark, title = "Riwayat Transaksi", onClick = { /* TODO */ })
-                        HorizontalDivider(color = Color(0xFFF4F6F7), modifier = Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(color = Color(0xFF2196F3), modifier = Modifier.padding(horizontal = 16.dp))
+                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = AdminDark, title = "Riwayat Transaksi", onClick = { onNavigate("riwayat_transaksi") })
+                        HorizontalDivider(color = Color(0xFF03A9F4), modifier = Modifier.padding(horizontal = 16.dp))
+
+                        // 💡 TOMBOL SWITCH MODE GELAP (Disisipkan tepat di bawah Riwayat Transaksi)
+                        MenuSwitchItem(
+                            icon = if (isDarkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
+                            iconTint = if (isDarkMode) Color(0xFFF39C12) else ritecsBlue,
+                            title = "Mode Gelap",
+                            isChecked = isDarkMode,
+                            onCheckedChange = { newValue ->
+                                scope.launch {
+                                    authPreferences.setDarkMode(newValue)
+                                }
+                            }
+                        )
+
+                        HorizontalDivider(color = Color(0xFF03A9F4), modifier = Modifier.padding(horizontal = 16.dp))
                         MenuListItem(icon = Icons.Default.CardGiftcard, iconTint = AdminDark, title = "Member Benefit", onClick = { onNavigate("benefit_member") })
                     }
                 }
@@ -296,7 +310,7 @@ fun ProfileScreen(
                 }
             }
 
-            // --- TOMBOL KELUAR (ELEGAN & TEGAS) ---
+            // --- TOMBOL KELUAR ---
             if (isLoggedIn) {
                 Spacer(modifier = Modifier.height(36.dp))
                 Button(
@@ -317,7 +331,7 @@ fun ProfileScreen(
 }
 
 // ==========================================
-// KOMPONEN LIST MENU ELEGAN
+// KOMPONEN LIST MENU REGULER
 // ==========================================
 @Composable
 fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () -> Unit) {
@@ -325,7 +339,7 @@ fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () 
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 18.dp), // Padding sedikit diperbesar biar lega
+            .padding(horizontal = 16.dp, vertical = 18.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -334,9 +348,45 @@ fun MenuListItem(icon: ImageVector, iconTint: Color, title: String, onClick: () 
         ) {
             Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
         }
-
         Spacer(modifier = Modifier.width(16.dp))
         Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2C3E50), modifier = Modifier.weight(1f))
         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFFCBD5E1))
+    }
+}
+
+// ==========================================
+// 💡 KOMPONEN KHUSUS UNTUK MENU SWITCH (MODE GELAP)
+// ==========================================
+@Composable
+fun MenuSwitchItem(icon: ImageVector, iconTint: Color, title: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!isChecked) }
+            .padding(horizontal = 16.dp, vertical = 8.dp), // Vertical padding disesuaikan agar tinggi switch tidak merusak formasi
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.size(38.dp).clip(RoundedCornerShape(10.dp)).background(iconTint.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2C3E50), modifier = Modifier.weight(1f))
+
+        // Switch Interaktif
+        Switch(
+            checked = isChecked,
+            onCheckedChange = onCheckedChange,
+            modifier = Modifier.scale(0.85f), // Skala diperkecil sedikit biar menyatu elegan dengan baris menu
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = Color(0xFF0F2027), // AdminDark
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = Color.LightGray
+            )
+        )
     }
 }

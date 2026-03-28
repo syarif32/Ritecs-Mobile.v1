@@ -397,5 +397,14 @@ suspend fun getAdminJournals(@Header("Authorization") token: String): Response<A
     suspend fun addWriterAjax(
         @Header("Authorization") token: String,
         @Field("name") name: String
-    ): Response<com.example.ritecsmobile.data.remote.dto.IdNameDto> // Asumsi Laravel return json(['id' => $id, 'name' => $name])
+    ): Response<com.example.ritecsmobile.data.remote.dto.IdNameDto>
+
+    // ==========================================
+    // API UNTUK RIWAYAT TRANSAKSI USER BIASA
+    // ==========================================
+    @Headers("Accept: application/json")
+    @GET("user/transactions")
+    suspend fun getUserTransactions(
+        @Header("Authorization") token: String
+    ): retrofit2.Response<com.example.ritecsmobile.data.remote.dto.UserTransactionResponse>
 }

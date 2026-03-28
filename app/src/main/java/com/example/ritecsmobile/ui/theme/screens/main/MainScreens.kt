@@ -248,6 +248,11 @@ fun MainScreen() {
                 composable("profile_settings") {
                     com.example.ritecsmobile.ui.screens.profile.ProfileSettingsScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
+                composable("riwayat_transaksi") {
+                    com.example.ritecsmobile.ui.screens.profile.TransactionHistoryScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() }
+                    )
+                }
                 composable("layanan_jurnal") {
                     com.example.ritecsmobile.ui.screens.home.LayananJurnalScreen()
                 }

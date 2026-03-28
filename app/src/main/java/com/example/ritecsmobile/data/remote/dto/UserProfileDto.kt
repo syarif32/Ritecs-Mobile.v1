@@ -43,3 +43,19 @@ data class SimpleResponse(
     val status: String,
     val message: String
 )
+// ==========================================
+// DTO UNTUK RIWAYAT TRANSAKSI USER BIASA
+// ==========================================
+data class UserTransactionResponse(
+    val status: String,
+    val data: List<UserTransactionDto>
+)
+
+data class UserTransactionDto(
+    val id: Int,
+    val bank_name: String?,
+    val amount: Long?,
+    val status: String, // "pending", "paid", "rejected"
+    val type: String,
+    val created_at: String?
+)
