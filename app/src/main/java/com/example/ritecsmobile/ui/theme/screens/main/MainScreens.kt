@@ -1,6 +1,7 @@
 package com.example.ritecsmobile.ui.screens.main
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +14,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -113,11 +116,9 @@ fun MainScreen() {
                         }
                     )
                 }
-                // 2. RUTE AUTHENTICATION (LOGIN, REGIS, OTP)
                 composable("login_route") {
                     LoginScreen(
                         onLoginSuccess = { role ->
-                            // 💡 LOGIKA REDIRECT ROLE (Admin vs User)
                             if (role.equals("Admin", ignoreCase = true)) {
                                 bottomNavController.navigate("admin_dashboard") {
                                     popUpTo("login_route") { inclusive = true }
@@ -130,8 +131,7 @@ fun MainScreen() {
                         },
                         onNavigateToRegister = { bottomNavController.navigate("register_route") },
                         onNavigateToOtp = { email ->
-                            registeredEmail = email
-                            bottomNavController.navigate("otp_route")
+                            bottomNavController.navigate("otp_route/$email")
                         }
                     )
                 }
@@ -139,16 +139,17 @@ fun MainScreen() {
                 composable("register_route") {
                     RegisterScreen(
                         onRegisterSuccess = { email ->
-                            registeredEmail = email
-                            bottomNavController.navigate("otp_route")
+                            bottomNavController.navigate("otp_route/$email")
                         },
                         onNavigateBack = { bottomNavController.popBackStack() }
                     )
                 }
 
-                composable("otp_route") {
+                composable("otp_route/{email}") { backStackEntry ->
+                    val emailDariRoute = backStackEntry.arguments?.getString("email") ?: ""
+
                     VerifyOtpScreen(
-                        email = registeredEmail,
+                        email = emailDariRoute,
                         onVerifySuccess = {
                             bottomNavController.navigate("home_tab") {
                                 popUpTo("login_route") { inclusive = true }
@@ -157,9 +158,7 @@ fun MainScreen() {
                         onNavigateBack = { bottomNavController.popBackStack() }
                     )
                 }
-                // ==========================================
-                // 3. TAB UTAMA USER (BOTTOM NAV)
-                // ==========================================
+
                 composable("home_tab") {
                     BerandaScreen(
                         onNavigate = { route ->
@@ -201,7 +200,9 @@ fun MainScreen() {
                         LoginScreen(
                             onLoginSuccess = { bottomNavController.navigate("home_tab") },
                             onNavigateToRegister = { bottomNavController.navigate("register_route") },
-                            onNavigateToOtp = { bottomNavController.navigate("otp_route") }
+                            onNavigateToOtp = { email ->
+                                bottomNavController.navigate("otp_route/$email")
+                            }
                         )
                     } else {
                         com.example.ritecsmobile.ui.screens.profile.ProfileScreen(
@@ -257,7 +258,11 @@ fun MainScreen() {
                     com.example.ritecsmobile.ui.screens.home.LayananJurnalScreen()
                 }
                 composable("benefit_member") {
-                    com.example.ritecsmobile.ui.screens.members.MemberRegistrationScreen()
+                    // 💡 Sesuai permintaan Bos: Menyambungkan onSuccess ke halaman Kartu Digital!
+                    com.example.ritecsmobile.ui.screens.members.MemberRegistrationScreen(
+                        onNavigateBack = { bottomNavController.popBackStack() },
+                        onSuccess = { bottomNavController.navigate("profile_membership") }
+                    )
                 }
                 composable("haki") {
                     com.example.ritecsmobile.ui.screens.home.HakiScreen(
@@ -339,7 +344,7 @@ fun MainScreen() {
 
                 composable("admin_activation_requests") {
                     // Screen Verifikasi Manual OTP
-                  com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                    com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
                 composable("admin_manage_users") {
@@ -389,26 +394,41 @@ fun BottomNavigationBar(navController: NavHostController) {
     val ritecsBlue = Color(0xFF0062CD)
 
     NavigationBar(
-        containerColor = Color.White,
+        // 💡 Warna Background Dinamis
+        containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
-        modifier = Modifier.border(0.5.dp, Color(0xFFE2E8F0), RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+        modifier = Modifier.border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
     ) {
         items.forEach { item ->
             val isSelected = currentRoute == item.route
             NavigationBarItem(
+                // 💡 INI DIA TRIK GRADASI UNTUK HOVER MENU AKTIFNYA
                 icon = {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = item.title,
-                        tint = if (isSelected) ritecsBlue else Color(0xFF94A3B8)
-                    )
+                    if (isSelected) {
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    brush = Brush.horizontalGradient(
+                                        colors = listOf(Color(0xFF004191), ritecsBlue) // Gradasi Biru Gelap ke Biru Ritecs
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
+                                .padding(horizontal = 20.dp, vertical = 6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(imageVector = item.icon, contentDescription = item.title, tint = Color.White)
+                        }
+                    } else {
+                        // Kalau tidak aktif, warnanya menyesuaikan (Abu-abu Kalem)
+                        Icon(imageVector = item.icon, contentDescription = item.title, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 },
                 label = {
                     Text(
                         text = item.title,
                         fontSize = 11.sp,
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) ritecsBlue else Color(0xFF94A3B8)
+                        color = if (isSelected) ritecsBlue else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
                 selected = isSelected,
@@ -424,11 +444,9 @@ fun BottomNavigationBar(navController: NavHostController) {
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = ritecsBlue.copy(alpha = 0.1f),
-                    selectedIconColor = ritecsBlue,
-                    unselectedIconColor = Color(0xFF94A3B8),
+                    indicatorColor = Color.Transparent,
                     selectedTextColor = ritecsBlue,
-                    unselectedTextColor = Color(0xFF94A3B8)
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
         }

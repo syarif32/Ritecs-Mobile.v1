@@ -21,7 +21,6 @@ fun HomeScreen(onLogout: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val authPreferences = remember { AuthPreferences(context) }
 
-    // 1. Ambil token dari brankas DataStore
     val token by authPreferences.authToken.collectAsState(initial = "")
 
     var userProfile by remember { mutableStateOf<UserDto?>(null) }

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ritecsmobile.R
@@ -33,10 +34,6 @@ import com.example.ritecsmobile.data.remote.dto.LoginRequest
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 
-//  Warna Khas Ritecs
-val RitecsDarkBlue = Color(0xFF004191)
-val RitecsLightBlue = Color(0xFF0091FF)
-val RitecsBlue = Color(0xFF0062CD)
 
 @Composable
 fun LoginScreen(
@@ -52,9 +49,11 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // 💡 STATE UNTUK POP-UP AKTIVASI PENDING
+    var showPendingDialog by remember { mutableStateOf(false) }
+
     val primaryColor = MaterialTheme.colorScheme.primary
 
-    // 💡 KEMBALI MENGGUNAKAN SURFACE PUTIH CLEAN
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -99,7 +98,7 @@ fun LoginScreen(
                             text = "Selamat Datang",
                             fontSize = 24.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.onBackground
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "Masuk untuk melanjutkan",
@@ -119,7 +118,11 @@ fun LoginScreen(
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = primaryColor,
-                                unfocusedBorderColor = Color(0xFFE2E8F0)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = primaryColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
 
@@ -134,10 +137,8 @@ fun LoginScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
                                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                                val description = if (passwordVisible) "Sembunyikan password" else "Tampilkan password"
-
                                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                    Icon(imageVector = image, contentDescription = description, tint = Color.Gray)
+                                    Icon(imageVector = image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -145,7 +146,11 @@ fun LoginScreen(
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = primaryColor,
-                                unfocusedBorderColor = Color(0xFFE2E8F0)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = primaryColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         )
 
@@ -165,16 +170,38 @@ fun LoginScreen(
 
                                                 AuthPreferences(context).saveToken(token, role)
                                                 Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-
                                                 onLoginSuccess(role)
                                             } else {
                                                 val errorBody = response.errorBody()?.string()
                                                 val jsonError = errorBody?.let { JSONObject(it) }
                                                 val errorMessage = jsonError?.optString("message", "Login Gagal") ?: "Login Gagal"
-                                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                                                val code = response.code()
 
-                                                if (response.code() == 403 && errorMessage.contains("Belum diverifikasi", ignoreCase = true)) {
+                                                // ====================================================
+                                                // 💡 LOGIKA REDIRECT & UX YANG DIPERBAIKI
+                                                // ====================================================
+
+                                                if (code == 401 || errorMessage.contains("kredensial", ignoreCase = true)) {
+                                                    // 1. SALAH PASSWORD / EMAIL -> UX DIPERBAIKI, TIDAK DILEMPAR KE REGISTER
+                                                    Toast.makeText(context, "Email atau Password tidak sesuai.", Toast.LENGTH_LONG).show()
+                                                }
+                                                else if (errorMessage.contains("diproses", ignoreCase = true) || errorMessage.contains("admin", ignoreCase = true)) {
+                                                    // 2. MINTA AKTIVASI MANUAL -> MUNCULKAN POP-UP
+                                                    showPendingDialog = true
+                                                }
+                                                else if (code == 403 || errorMessage.contains("diverifikasi", ignoreCase = true)) {
+                                                    // 3. BELUM VERIFIKASI OTP -> KE HALAMAN OTP
+                                                    Toast.makeText(context, "Akun belum aktif, silakan verifikasi OTP.", Toast.LENGTH_LONG).show()
                                                     onNavigateToOtp(email)
+                                                }
+                                                else if (code == 404 || errorMessage.contains("tidak ditemukan", ignoreCase = true)) {
+                                                    // 4. AKUN TIDAK ADA -> LEMPAR KE REGISTER
+                                                    Toast.makeText(context, "Akun tidak ditemukan. Silakan mendaftar.", Toast.LENGTH_LONG).show()
+                                                    onNavigateToRegister()
+                                                }
+                                                else {
+                                                    // 5. ERROR LAINNYA
+                                                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                                                 }
                                             }
                                         } catch (e: Exception) {
@@ -187,22 +214,15 @@ fun LoginScreen(
                                     Toast.makeText(context, "Isi email dan password", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), // Set transparent biar Box di dalamnya bisa kelihatan
-                            contentPadding = PaddingValues() // Hapus padding default
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues()
                         ) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(RitecsDarkBlue, RitecsLightBlue) // Gradasi Kiri ke Kanan
-                                        ),
-                                        shape = RoundedCornerShape(12.dp)
-                                    ),
+                                    .background(brush = Brush.horizontalGradient(colors = listOf(RitecsDarkBlue, RitecsLightBlue)), shape = RoundedCornerShape(12.dp)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
@@ -214,16 +234,18 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // PEMISAH KEMBALI WARNA NORMAL
+                // PEMISAH
                 Row(modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically) {
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
-                    Text(" ATAU ", fontSize = 12.sp, color = Color(0xFF64748B), modifier = Modifier.padding(horizontal = 8.dp))
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                    Text(" ATAU ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 8.dp))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
                 }
                 Spacer(modifier = Modifier.height(24.dp))
+
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
                 var isGoogleLoading by remember { mutableStateOf(false) }
-                // TOMBOL GOOGLE KEMBALI WARNA NORMAL
+
+                // 💡 TOMBOL GOOGLE LOGIN
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -252,12 +274,10 @@ fun LoginScreen(
 
                                     val googleEmail = googleIdTokenCredential.id
                                     val googleId = googleIdTokenCredential.idToken
-
                                     val fullName = googleIdTokenCredential.displayName ?: "User"
                                     val nameParts = fullName.split(" ", limit = 2)
                                     val firstName = nameParts.getOrNull(0) ?: "User"
                                     val lastName = nameParts.getOrNull(1)
-
                                     val profilePic = googleIdTokenCredential.profilePictureUri?.toString()
 
                                     val apiRequest = com.example.ritecsmobile.data.remote.dto.GoogleLoginRequest(
@@ -278,7 +298,8 @@ fun LoginScreen(
 
                                         onLoginSuccess(role)
                                     } else {
-                                        Toast.makeText(context, "Gagal sinkron ke server Ritecs.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Akun Google belum terdaftar. Silakan registrasi.", Toast.LENGTH_LONG).show()
+                                        onNavigateToRegister()
                                     }
 
                                 } else {
@@ -286,8 +307,9 @@ fun LoginScreen(
                                 }
 
                             } catch (e: androidx.credentials.exceptions.GetCredentialException) {
-                                android.util.Log.e("GOOGLE_AUTH", "Error detail: ", e)
-                                Toast.makeText(context, "Batal/Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                android.util.Log.e("RITECS_LOG_GOOGLE", "Error Credential: ${e.message}")
+                                Toast.makeText(context, "Akun tidak ditemukan. Silakan daftar terlebih dahulu.", Toast.LENGTH_LONG).show()
+                                onNavigateToRegister()
                             } catch (e: Exception) {
                                 Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                             } finally {
@@ -295,28 +317,23 @@ fun LoginScreen(
                             }
                         }
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.onBackground,
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground, containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     enabled = !isGoogleLoading
                 ) {
                     if (isGoogleLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     } else {
                         Image(painter = painterResource(id = R.drawable.ic_google), contentDescription = null, modifier = Modifier.size(20.dp).padding(end = 8.dp))
-                        Text("Lanjutkan dengan Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Lanjutkan dengan Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // LINK REGISTER KEMBALI WARNA NORMAL
+                // LINK REGISTER
                 Row(modifier = Modifier.padding(bottom = 32.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Belum punya akun? ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Text(
@@ -329,5 +346,30 @@ fun LoginScreen(
                 }
             }
         }
+    }
+    if (showPendingDialog) {
+        AlertDialog(
+            onDismissRequest = { showPendingDialog = false },
+            title = { Text("Aktivasi Sedang Diproses", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+            text = {
+                Text(
+                    "Permintaan aktivasi manual Anda sedang ditinjau oleh tim Admin kami. Mohon menunggu 1x24 jam sebelum mencoba login kembali.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showPendingDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Saya Mengerti", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 }

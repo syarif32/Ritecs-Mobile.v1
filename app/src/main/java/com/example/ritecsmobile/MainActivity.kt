@@ -19,7 +19,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-             val context = LocalContext.current
+            val context = LocalContext.current
+
             val authPreferences = remember { AuthPreferences(context) }
             val isDarkMode by authPreferences.isDarkMode.collectAsState(initial = false)
             RitecsMobileTheme(

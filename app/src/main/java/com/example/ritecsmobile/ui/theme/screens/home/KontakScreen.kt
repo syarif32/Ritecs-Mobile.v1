@@ -43,8 +43,8 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
     var subject by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
+    // 💡 Warna Brand Tetap Statis
     val ritecsBlue = Color(0xFF0062CD)
-    val softBg = Color(0xFFF8FAFC)
 
     LaunchedEffect(Unit) {
         try {
@@ -56,25 +56,25 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
     }
 
     Scaffold(
-        containerColor = softBg,
+        // 💡 Latar belakang otomatis
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            // 💡 Top Bar lebih tipis dan modern
             CenterAlignedTopAppBar(
                 title = {
                     Text(
                         "Hubungi Kami",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface // 💡 Hitam/Putih Otomatis
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.Black)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onSurface) // 💡 Otomatis
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface // 💡 Putih/Dark Slate Otomatis
                 ),
                 modifier = Modifier.statusBarsPadding()
             )
@@ -106,25 +106,25 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                 Text(
                     "Punya pertanyaan atau butuh bantuan? Tim Ritecs siap melayani Anda sepenuh hati.",
                     fontSize = 14.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, // 💡 Abu-abu Otomatis
                     lineHeight = 20.sp
                 )
 
                 Spacer(modifier = Modifier.height(28.dp))
 
                 // INFO KONTAK CARD
-                Text("Informasi Kontak", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                Text("Informasi Kontak", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 12.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // 💡 Otomatis
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         ContactItem(Icons.Default.LocationOn, "Alamat Kantor", infoData?.address ?: "-", ritecsBlue)
-                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) // 💡 Otomatis
                         ContactItem(Icons.Default.Email, "Email Support", infoData?.email ?: "-", ritecsBlue)
-                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) // 💡 Otomatis
                         ContactItem(Icons.Default.Phone, "WhatsApp / Telp", infoData?.phone ?: "-", ritecsBlue)
                     }
                 }
@@ -132,11 +132,11 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // FORM SECTION
-                Text("Kirim Pesan Langsung", fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 12.dp))
+                Text("Kirim Pesan Langsung", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 12.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // 💡 Otomatis
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -162,7 +162,9 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ritecsBlue,
-                                unfocusedBorderColor = Color(0xFFE2E8F0)
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // 💡 Otomatis
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface, // 💡 Teks ketikan aman
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
 
@@ -189,15 +191,15 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                             },
                             modifier = Modifier.fillMaxWidth().height(54.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = ritecsBlue),
+                            colors = ButtonDefaults.buttonColors(containerColor = ritecsBlue), // 💡 Tetap Biru Brand
                             enabled = !isSubmitting
                         ) {
                             if (isSubmitting) {
                                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                             } else {
-                                Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
                                 Spacer(modifier = Modifier.width(10.dp))
-                                Text("Kirim Pesan Sekarang", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text("Kirim Pesan Sekarang", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
                             }
                         }
                     }
@@ -220,14 +222,16 @@ fun CustomOutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color.Gray) },
+        leadingIcon = { Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) }, // 💡 Otomatis
         modifier = Modifier.fillMaxWidth(),
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color(0xFF0062CD),
-            unfocusedBorderColor = Color(0xFFE2E8F0)
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // 💡 Otomatis
+            focusedTextColor = MaterialTheme.colorScheme.onSurface, // 💡 Otomatis
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface // 💡 Otomatis
         )
     )
 }
@@ -245,8 +249,8 @@ fun ContactItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: St
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(title, fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
-            Text(value, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
+            Text(title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp) // 💡 Otomatis
+            Text(value, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium) // 💡 Otomatis
         }
     }
 }

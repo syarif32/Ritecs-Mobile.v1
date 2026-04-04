@@ -41,9 +41,8 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
-
+// 💡 WARNA IDENTITAS BRAND (Dibiarkan tetap)
 val RitecsBlue = Color(0xFF0062CD)
-val BackgroundSoft = Color(0xFFF5F6FA)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,7 +149,8 @@ fun ProfileSettingsScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BackgroundSoft)
+                    // 💡 Latar Belakang Layar Otomatis
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp, vertical = 24.dp),
@@ -161,8 +161,9 @@ fun ProfileSettingsScreen(
                     modifier = Modifier
                         .size(110.dp)
                         .clip(CircleShape)
-                        .background(Color.LightGray)
-                        .border(3.dp, Color.White, CircleShape)
+                        // 💡 Warna placeholder avatar otomatis
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                        .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape)
                         .clickable { avatarPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     contentAlignment = Alignment.Center
                 ) {
@@ -173,7 +174,8 @@ fun ProfileSettingsScreen(
                     } else if (existingAvatarUrl != null) {
                         AsyncImage(model = existingAvatarUrl, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
                     } else {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(60.dp))
+                        // 💡 Warna icon otomatis (putih jika gelap, abu jika terang)
+                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(60.dp))
                     }
 
                     // Icon Kamera Kecil di Kanan Bawah
@@ -183,14 +185,15 @@ fun ProfileSettingsScreen(
                             .size(34.dp)
                             .clip(CircleShape)
                             .background(RitecsBlue)
-                            .border(2.dp, Color.White, CircleShape),
+                            .border(2.dp, MaterialTheme.colorScheme.surface, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("Ketuk untuk ubah foto profil", fontSize = 13.sp, color = Color.Gray, fontWeight = FontWeight.Medium)
+                // 💡 Teks Keterangan otomatis
+                Text("Ketuk untuk ubah foto profil", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -198,7 +201,8 @@ fun ProfileSettingsScreen(
                 FormSectionTitle(title = "Data Pribadi", icon = Icons.Default.Badge)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Card otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -223,7 +227,8 @@ fun ProfileSettingsScreen(
                 FormSectionTitle(title = "Domisili & Institusi", icon = Icons.Default.LocationCity)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Card otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -245,7 +250,8 @@ fun ProfileSettingsScreen(
                 FormSectionTitle(title = "Verifikasi KTP", icon = Icons.Default.CreditCard)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Card otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -255,8 +261,9 @@ fun ProfileSettingsScreen(
                                 .fillMaxWidth()
                                 .height(160.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF8F9FA))
-                                .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+                                // 💡 Warna placeholder KTP otomatis
+                                .background(MaterialTheme.colorScheme.background)
+                                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
                                 .clickable { ktpPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                             contentAlignment = Alignment.Center
                         ) {
@@ -268,8 +275,9 @@ fun ProfileSettingsScreen(
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = RitecsBlue, modifier = Modifier.size(48.dp))
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("Ketuk untuk unggah foto KTP", color = Color.Gray, fontSize = 13.sp, textAlign = TextAlign.Center)
-                                    Text("Format: JPG, PNG", color = Color.LightGray, fontSize = 11.sp, textAlign = TextAlign.Center)
+                                    // 💡 Warna Teks Keterangan otomatis
+                                    Text("Ketuk untuk unggah foto KTP", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp, textAlign = TextAlign.Center)
+                                    Text("Format: JPG, PNG", color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), fontSize = 11.sp, textAlign = TextAlign.Center)
                                 }
                             }
                         }
@@ -282,7 +290,8 @@ fun ProfileSettingsScreen(
                 FormSectionTitle(title = "Keamanan", icon = Icons.Default.Security)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Card otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -295,7 +304,8 @@ fun ProfileSettingsScreen(
                             label = "Kata Sandi Baru (Opsional)",
                             visualTransformation = PasswordVisualTransformation()
                         )
-                        Text("Biarkan kosong jika tidak ingin mengubah sandi.", fontSize = 11.sp, color = Color.Gray, modifier = Modifier.padding(top = 4.dp, start = 4.dp))
+                        // 💡 Warna Teks otomatis
+                        Text("Biarkan kosong jika tidak ingin mengubah sandi.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp, start = 4.dp))
                     }
                 }
 
@@ -365,7 +375,8 @@ fun FormSectionTitle(title: String, icon: ImageVector) {
     ) {
         Icon(icon, contentDescription = null, tint = RitecsBlue, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+        // 💡 Warna Judul otomatis (Hitam/Putih)
+        Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -389,14 +400,18 @@ fun CustomOutlinedTextField(
         enabled = enabled,
         singleLine = singleLine,
         modifier = modifier,
+        // 💡 Warna Field otomatis menyesuaikan tema (Garis Pinggir & Teks dalam kotak)
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = RitecsBlue,
-            unfocusedBorderColor = Color(0xFFE0E0E0),
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
             focusedLabelColor = RitecsBlue,
-            unfocusedLabelColor = Color.Gray,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
             cursorColor = RitecsBlue,
-            disabledBorderColor = Color(0xFFE0E0E0),
-            disabledTextColor = Color.DarkGray
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         ),
         shape = RoundedCornerShape(8.dp)
     )

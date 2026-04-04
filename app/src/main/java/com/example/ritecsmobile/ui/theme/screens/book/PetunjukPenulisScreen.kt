@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.GuidelineDataDto
 
-// 💡 Konstanta Warna Ritecs
+// 💡 Konstanta Warna Ritecs (Dipertahankan)
 val RitecsDarkBlue = Color(0xFF004191)
 val RitecsLightBlue = Color(0xFF0091FF)
 val RitecsBlue = Color(0xFF0062CD)
@@ -45,7 +45,7 @@ fun PetunjukPenulisScreen(onNavigateBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            // 💡 BUNGKUS TOP APP BAR DENGAN BOX GRADASI
+            // 💡 BUNGKUS TOP APP BAR DENGAN BOX GRADASI (Tetap dipertahankan agar brand identity kuat)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -79,41 +79,48 @@ fun PetunjukPenulisScreen(onNavigateBack: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White) // 💡 Latar utama dibuat Putih Bersih
+                    // 💡 Latar utama dibuat Dinamis
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
 
                 // BAGIAN 1: SKEMA PENERBITAN
-                Text("Skema Penerbitan", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = RitecsDarkBlue)
+                // 💡 Warna judul diubah ke warna Primary Tema agar aman di Dark Mode
+                Text("Skema Penerbitan", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 guidelineData?.schemes?.forEach { scheme ->
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)), // Sedikit abu-abu agar kontras dengan latar putih
+                        // 💡 Warna Card Dinamis
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Dibuat flat agar lebih modern
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(scheme.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+                            // 💡 Judul Skema Hitam/Putih Dinamis
+                            Text(scheme.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(scheme.description ?: "-", fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
+                            // 💡 Deskripsi Abu-abu Dinamis
+                            Text(scheme.description ?: "-", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = Color(0xFFE2E8F0)) // Warna garis pemisah yang lebih halus
+                // 💡 Warna garis pemisah Dinamis
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // BAGIAN 2: LANGKAH-LANGKAH
-                Text("Langkah-Langkah", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = RitecsDarkBlue)
+                // 💡 Warna judul diubah ke warna Primary Tema agar aman di Dark Mode
+                Text("Langkah-Langkah", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 guidelineData?.steps?.forEachIndexed { index, step ->
                     Row(modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-                        // Lingkaran Angka Step (Warna RitecsBlue)
+                        // Lingkaran Angka Step (Warna RitecsBlue tetap dipertahankan)
                         Box(
                             modifier = Modifier
                                 .size(32.dp)
@@ -128,9 +135,11 @@ fun PetunjukPenulisScreen(onNavigateBack: () -> Unit) {
 
                         // Teks Langkah
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(step.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+                            // 💡 Judul Langkah Hitam/Putih Dinamis
+                            Text(step.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(step.description ?: "-", fontSize = 14.sp, color = Color.DarkGray, lineHeight = 20.sp)
+                            // 💡 Deskripsi Langkah Abu-abu Dinamis
+                            Text(step.description ?: "-", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp)
                         }
                     }
                 }

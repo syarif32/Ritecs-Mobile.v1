@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme // 💡 Ditambahkan untuk tema
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -67,11 +68,13 @@ fun SplashScreen(onNavigateToOnboarding: () -> Unit) {
         delay(2200L)
         onNavigateToOnboarding()
     }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            // 💡 CUMA INI YANG DIGANTI: Mencegah efek flashbang putih di malam hari!
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Box(
             modifier = Modifier

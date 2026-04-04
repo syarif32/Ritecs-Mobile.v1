@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerifyOtpScreen(
@@ -69,7 +70,7 @@ fun VerifyOtpScreen(
         }
     }
 
-    // 💡 BACKGROUND TETAP BERSIH/PUTIH
+    // 💡 BACKGROUND UTAMA DINAMIS (Terang/Gelap menyesuaikan HP)
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(
             modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp),
@@ -83,7 +84,8 @@ fun VerifyOtpScreen(
 
                 // TOMBOL KEMBALI KECIL DI POJOK KIRI ATAS
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali") }
+                    // 💡 Ikon otomatis hitam/putih
+                    IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onSurface) }
                 }
 
                 // LOGO
@@ -97,16 +99,19 @@ fun VerifyOtpScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White), // 💡 Kotak dibikin putih solid
+                    // 💡 Warna Latar Belakang Kartu Dinamis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Verifikasi Email", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1E293B))
+                        // 💡 Teks Judul Dinamis
+                        Text("Verifikasi Email", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Kode 6 digit telah dikirim ke:\n$email", fontSize = 14.sp, textAlign = TextAlign.Center, color = Color(0xFF64748B))
+                        // 💡 Teks Deskripsi Dinamis
+                        Text("Kode 6 digit telah dikirim ke:\n$email", fontSize = 14.sp, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                         Spacer(modifier = Modifier.height(32.dp))
 
@@ -118,9 +123,14 @@ fun VerifyOtpScreen(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                             singleLine = true,
-                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = 12.sp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue, unfocusedBorderColor = Color(0xFFE2E8F0)),
-                            placeholder = { Text("_ _ _ _ _ _", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 24.sp) }
+                            // 💡 Warna Teks dan Placeholder Dinamis
+                            textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center, fontSize = 28.sp, fontWeight = FontWeight.Bold, letterSpacing = 12.sp, color = MaterialTheme.colorScheme.onSurface),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = RitecsBlue,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                cursorColor = RitecsBlue
+                            ),
+                            placeholder = { Text("_ _ _ _ _ _", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)) }
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -187,7 +197,8 @@ fun VerifyOtpScreen(
 
                 // TIMER & RESEND LOGIC
                 if (timeLeft > 0) {
-                    Text(text = "Kirim ulang dalam $timeLeft detik", color = Color.Gray, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                    // 💡 Teks Timer Otomatis
+                    Text(text = "Kirim ulang dalam $timeLeft detik", color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                 } else {
                     Text(
                         text = "Kirim Ulang OTP", color = RitecsBlue, fontWeight = FontWeight.Bold, fontSize = 15.sp,
@@ -229,21 +240,25 @@ fun VerifyOtpScreen(
     if (showRulesDialog) {
         AlertDialog(
             onDismissRequest = { showRulesDialog = false },
-            title = { Text("Panduan Verifikasi", fontWeight = FontWeight.Bold) },
+            // 💡 Teks Dinamis
+            title = { Text("Panduan Verifikasi", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
-                    Text("1. Periksa Folder Spam/Junk", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("Kode seringkali tidak masuk ke Inbox utama.\n", fontSize = 13.sp, color = Color.DarkGray)
+                    // 💡 Teks Dinamis
+                    Text("1. Periksa Folder Spam/Junk", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Kode seringkali tidak masuk ke Inbox utama.\n", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
-                    Text("2. Cek Penyimpanan (Storage)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("Pastikan kapasitas Google Drive/Email Anda tidak penuh.\n", fontSize = 13.sp, color = Color.DarkGray)
+                    Text("2. Cek Penyimpanan (Storage)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Pastikan kapasitas Google Drive/Email Anda tidak penuh.\n", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     Text("3. Batas Kirim Ulang", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.error)
-                    Text("Maksimal permintaan OTP adalah 3 kali dalam 24 jam demi keamanan.", fontSize = 13.sp, color = Color.DarkGray)
+                    Text("Maksimal permintaan OTP adalah 3 kali dalam 24 jam demi keamanan.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             confirmButton = { TextButton(onClick = { showRulesDialog = false }) { Text("Saya Mengerti", fontWeight = FontWeight.Bold, color = RitecsBlue) } },
-            shape = RoundedCornerShape(16.dp), containerColor = MaterialTheme.colorScheme.surface
+            shape = RoundedCornerShape(16.dp),
+            // 💡 Latar Belakang Dialog Dinamis
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 
@@ -253,13 +268,15 @@ fun VerifyOtpScreen(
     if (showManualDialog) {
         AlertDialog(
             onDismissRequest = { showManualDialog = false },
-            title = { Text("Bantuan Aktivasi", fontWeight = FontWeight.Bold) },
+            // 💡 Teks Dinamis
+            title = { Text("Bantuan Aktivasi", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
-                    Text("Permintaan akan dikirim ke Admin. Proses pengecekan maksimal 1x24 Jam.", fontSize = 13.sp, color = Color.Gray)
+                    // 💡 Teks Dinamis
+                    Text("Permintaan akan dikirim ke Admin. Proses pengecekan maksimal 1x24 Jam.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text("Apa kendala Anda?", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("Apa kendala Anda?", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
                     val reasons = listOf("Email Penuh", "Tidak Masuk Spam", "Salah Ketik Email", "Lainnya")
                     reasons.forEach { reason ->
@@ -267,9 +284,10 @@ fun VerifyOtpScreen(
                             RadioButton(
                                 selected = selectedReason == reason,
                                 onClick = { selectedReason = reason },
-                                colors = RadioButtonDefaults.colors(selectedColor = RitecsBlue)
+                                colors = RadioButtonDefaults.colors(selectedColor = RitecsBlue, unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant)
                             )
-                            Text(reason, fontSize = 13.sp)
+                            // 💡 Teks Pilihan Dinamis
+                            Text(reason, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
 
@@ -278,8 +296,16 @@ fun VerifyOtpScreen(
                         OutlinedTextField(
                             value = otherReasonDetail, onValueChange = { otherReasonDetail = it },
                             label = { Text("Jelaskan masalah") }, modifier = Modifier.fillMaxWidth(),
-                            textStyle = TextStyle(fontSize = 13.sp), shape = RoundedCornerShape(8.dp),
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue)
+                            textStyle = TextStyle(fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface), shape = RoundedCornerShape(8.dp),
+                            // 💡 Warna Kotak Input Dinamis
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = RitecsBlue,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = RitecsBlue,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }
@@ -292,13 +318,31 @@ fun VerifyOtpScreen(
                                 isSubmittingManual = true
                                 try {
                                     val req = ManualActivationRequest(email, selectedReason, if (selectedReason == "Lainnya") otherReasonDetail else null)
+
+                                    // 🔍 LOG 1: Cek apakah request berhasil dibuat sebelum dikirim
+                                    android.util.Log.d("RITECS_LOG_MANUAL", "Mencoba mengirim ke API: $req")
+
                                     val response = RetrofitClient.authApi.requestManualActivation(req)
+
                                     if (response.isSuccessful) {
+                                        // 🔍 LOG 2: Berhasil masuk Laravel
+                                        android.util.Log.d("RITECS_LOG_MANUAL", "Sukses! Response: ${response.body()}")
+
                                         Toast.makeText(context, "Permintaan terkirim!", Toast.LENGTH_LONG).show()
                                         showManualDialog = false
                                         onNavigateBack()
-                                    } else Toast.makeText(context, "Gagal Mengirim", Toast.LENGTH_LONG).show()
-                                } catch (e: Exception) { Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show() }
+                                    } else {
+                                        // 🔍 LOG 3: Laravel menolak (Error 400, 404, 422, 500)
+                                        val errorBody = response.errorBody()?.string()
+                                        android.util.Log.e("RITECS_LOG_MANUAL", "DITOLAK LARAVEL! HTTP Code: ${response.code()} | Body: $errorBody")
+
+                                        Toast.makeText(context, "Gagal Mengirim. Cek Logcat!", Toast.LENGTH_LONG).show()
+                                    }
+                                } catch (e: Exception) {
+                                    // 🔍 LOG 4: Aplikasi Crash atau Internet Mati sebelum nyampe Laravel
+                                    android.util.Log.e("RITECS_LOG_MANUAL", "CRASH/EXCEPTION: ${e.localizedMessage}", e)
+                                    Toast.makeText(context, "Error Koneksi", Toast.LENGTH_SHORT).show()
+                                }
                                 finally { isSubmittingManual = false }
                             }
                         } else Toast.makeText(context, "Pilih alasan", Toast.LENGTH_SHORT).show()
@@ -307,11 +351,14 @@ fun VerifyOtpScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue)
                 ) {
                     if (isSubmittingManual) CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                    else Text("Kirim")
+                    else Text("Kirim", color = Color.White)
                 }
             },
-            dismissButton = { TextButton(onClick = { showManualDialog = false }) { Text("Batal", color = Color.Gray) } },
-            shape = RoundedCornerShape(16.dp), containerColor = MaterialTheme.colorScheme.surface
+            // 💡 Tombol Batal warna dinamis
+            dismissButton = { TextButton(onClick = { showManualDialog = false }) { Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant) } },
+            shape = RoundedCornerShape(16.dp),
+            // 💡 Latar Belakang Dialog Dinamis
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }

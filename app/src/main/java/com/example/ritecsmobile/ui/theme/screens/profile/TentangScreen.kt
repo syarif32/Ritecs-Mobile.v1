@@ -34,8 +34,8 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
     var tentangData by remember { mutableStateOf<TentangDataDto?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
+    // 💡 WARNA BRAND TETAP DI-HARDCODE
     val ritecsBlue = Color(0xFF0062CD)
-    val softBg = Color(0xFFF8FAFC)
 
     LaunchedEffect(Unit) {
         try {
@@ -49,7 +49,8 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
     }
 
     Scaffold(
-        containerColor = softBg,
+        // 💡 Background Layar Utama Otomatis
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -60,7 +61,12 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+                // 💡 Header Otomatis menyesuaikan tema
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { paddingValues ->
@@ -98,9 +104,10 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 2. LEGALITAS CARD (HIJAU ELEGAN)
+                // 2. LEGALITAS CARD (HIJAU ELEGAN OTOMATIS AMAN DI DARK MODE)
                 Surface(
-                    color = Color(0xFFE8F5E9),
+                    // 💡 Gunakan warna hijau dengan alpha agar aman di Dark Mode
+                    color = Color(0xFF27AE60).copy(alpha = 0.1f),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -108,12 +115,12 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Gavel, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Gavel, contentDescription = null, tint = Color(0xFF27AE60), modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = tentangData?.subtitle?.stripHtml() ?: "Terdaftar Resmi",
                             fontSize = 13.sp,
-                            color = Color(0xFF2E7D32),
+                            color = Color(0xFF27AE60),
                             fontWeight = FontWeight.Bold,
                             lineHeight = 18.sp
                         )
@@ -126,7 +133,8 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Kartu Otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
@@ -137,13 +145,15 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                             Text("Visi", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = ritecsBlue)
                         }
                         Spacer(modifier = Modifier.height(10.dp))
+                        // 💡 Teks Visi Otomatis (Abu-abu Kalem)
                         Text(
                             text = tentangData?.vision?.stripHtml() ?: "Visi belum diatur.",
-                            fontSize = 14.sp, color = Color(0xFF475569), lineHeight = 22.sp, textAlign = TextAlign.Justify
+                            fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp, textAlign = TextAlign.Justify
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
-                        HorizontalDivider(color = Color(0xFFF1F5F9))
+                        // 💡 Garis Pemisah Otomatis
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(20.dp))
 
                         // MISI (DENGAN PEMBERSIH HTML)
@@ -153,9 +163,10 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                             Text("Misi", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = ritecsBlue)
                         }
                         Spacer(modifier = Modifier.height(10.dp))
+                        // 💡 Teks Misi Otomatis
                         Text(
                             text = tentangData?.mision?.stripHtml() ?: "Misi belum diatur.",
-                            fontSize = 14.sp, color = Color(0xFF475569), lineHeight = 22.sp, textAlign = TextAlign.Justify
+                            fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp, textAlign = TextAlign.Justify
                         )
                     }
                 }
@@ -166,34 +177,36 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    // 💡 Warna Kartu Otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         InfoRow(Icons.Default.LocationOn, "Semarang, Jawa Tengah")
-                        HorizontalDivider(color = Color(0xFFF8FAFC))
+                        // 💡 Garis Pemisah Otomatis
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                         InfoRow(Icons.Default.Language, "www.ritecs.org")
                     }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // 5. DEVELOPER INFO
+                // 5. DEVELOPER INFO (KREDIT UNTUK BOS SYARIF)
                 Text(
                     text = "Dikembangkan oleh",
                     fontSize = 11.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "Muhammad Najwa Syarif",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "© 2026 Ritecs Team",
                     fontSize = 11.sp,
-                    color = Color.LightGray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     modifier = Modifier.padding(top = 4.dp)
                 )
                 Spacer(modifier = Modifier.height(40.dp))
@@ -205,8 +218,9 @@ fun TentangScreen(onNavigateBack: () -> Unit) {
 @Composable
 fun InfoRow(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
+        // 💡 Icon & Text otomatis
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(12.dp))
-        Text(text, fontSize = 14.sp, color = Color(0xFF475569), fontWeight = FontWeight.Medium)
+        Text(text, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
     }
 }

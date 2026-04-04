@@ -76,6 +76,19 @@ fun BerandaScreen(
         }
     }
 
+    // 💡 LOGIKA FILTER SEARCH: Mencari judul buku atau jurnal yang cocok dengan ketikan user (case-insensitive)
+    val filteredBooks = if (searchQuery.isEmpty()) {
+        latestBooks
+    } else {
+        latestBooks.filter { it.title.contains(searchQuery, ignoreCase = true) }
+    }
+
+    val filteredJournals = if (searchQuery.isEmpty()) {
+        latestJournals
+    } else {
+        latestJournals.filter { it.title.contains(searchQuery, ignoreCase = true) }
+    }
+
     // Banner Promo
     val promoBanners = listOf(
         PromoBannerDrawable(R.drawable.banner1, "https://ritecs.org"),
@@ -90,7 +103,8 @@ fun BerandaScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize().background(BackgroundSoft)) {
+    // 💡 Latar Belakang Layar Otomatis
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,6 +137,7 @@ fun BerandaScreen(
                 ) {
                     repeat(promoBanners.size) { iteration ->
                         val isSelected = pagerState.currentPage == iteration
+                        // Titik banner biarkan putih agar terlihat di atas gambar
                         val color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
                         val width = if (isSelected) 20.dp else 8.dp
                         Box(
@@ -143,7 +158,7 @@ fun BerandaScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 shape = RoundedCornerShape(20.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.surface, // 💡 Warna Card Otomatis
                 shadowElevation = 3.dp
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
@@ -163,37 +178,51 @@ fun BerandaScreen(
             }
 
             Spacer(modifier = Modifier.height(28.dp))
-            SectionHeader("Buku Terbaru", onSeeAll = { onNavigate("buku_tab") })
+
+            // --- SECTION BUKU TERBARU ---
+            // 💡 Ubah judul sesuai filter pencarian
+            SectionHeader(if (searchQuery.isEmpty()) "Buku Terbaru" else "Hasil Pencarian Buku", onSeeAll = { onNavigate("buku_tab") })
+
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
+            } else if (filteredBooks.isEmpty()) {
+                // 💡 Menampilkan teks jika pencarian tidak ditemukan
+                Text("Buku tidak ditemukan.", modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    items(latestBooks) { book ->
-                        // 💡 PERBAIKAN 2: URL Image diperbaiki agar tidak double slash dan ada default gambarnya!
+                    // 💡 Menggunakan filteredBooks bukan latestBooks
+                    items(filteredBooks) { book ->
                         val imagePath = book.cover_path?.trimStart('/') ?: "assets/published/books/book_default.png"
                         val imageUrl = BASE_URL_BE + imagePath
 
                         val priceText = if (book.print_price != null && book.print_price > 0) formatToRupiah(book.print_price) else "GRATIS"
-                        val priceColor = if (priceText == "GRATIS") Color(0xFF27AE60) else Color.DarkGray
+                        val priceColor = if (priceText == "GRATIS") Color(0xFF27AE60) else MaterialTheme.colorScheme.onSurface
                         val author = book.writers?.joinToString(", ") { it.name } ?: "Ritecs"
 
                         HomeVerticalCard(
                             title = book.title, subtitle = author, label = "🏷️ BUKU", tagColor = Color(0xFF1976D2),
                             imageUrl = imageUrl, priceText = priceText, priceColor = priceColor,
-                            onClick = { onNavigateToBookDetail(book) } // 💡 Lompat langsung ke detail buku!
+                            onClick = { onNavigateToBookDetail(book) }
                         )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(28.dp))
-            SectionHeader("Jurnal Rilis Terbaru", onSeeAll = { onNavigate("jurnal_tab") })
+
+            // --- SECTION JURNAL TERBARU ---
+            // 💡 Ubah judul sesuai filter pencarian
+            SectionHeader(if (searchQuery.isEmpty()) "Jurnal Rilis Terbaru" else "Hasil Pencarian Jurnal", onSeeAll = { onNavigate("jurnal_tab") })
+
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
+            } else if (filteredJournals.isEmpty()) {
+                // 💡 Menampilkan teks jika pencarian tidak ditemukan
+                Text("Jurnal tidak ditemukan.", modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    items(latestJournals) { journal ->
-                        // 💡 PERBAIKAN 3: URL Jurnal juga diperbaiki!
+                    // 💡 Menggunakan filteredJournals bukan latestJournals
+                    items(filteredJournals) { journal ->
                         val imagePath = journal.cover_path?.trimStart('/') ?: ""
                         val imageUrl = BASE_URL_BE + imagePath
 
@@ -290,7 +319,7 @@ fun BerandaScreen(
                 // Custom Search Bar Anti-Kegencet
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface, // 💡 Warna Permukaan Search Bar Otomatis
                     modifier = Modifier
                         .weight(1f)
                         .height(50.dp),
@@ -300,17 +329,20 @@ fun BerandaScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxSize()
                     ) {
-                        Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray, modifier = Modifier.size(20.dp))
+                        // 💡 Ikon Search Otomatis Abu-abu sesuai tema
+                        Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                             if (searchQuery.isEmpty()) {
-                                Text("Cari buku, jurnal, dll...", color = Color.Gray, fontSize = 14.sp)
+                                // 💡 Placeholder Otomatis Abu-abu
+                                Text("Cari buku, jurnal, dll...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             }
                             androidx.compose.foundation.text.BasicTextField(
                                 value = searchQuery,
                                 onValueChange = { searchQuery = it },
-                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = Color.Black),
+                                // 💡 Warna Ketikan Teks Otomatis Hitam/Putih
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface),
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -321,7 +353,7 @@ fun BerandaScreen(
                 // Profile Icon
                 Surface(
                     shape = CircleShape,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
                         .size(50.dp)
                         .clickable { onNavigate("profile_tab") },
@@ -347,14 +379,16 @@ fun MenuIconItem(icon: ImageVector, title: String, tint: Color, onClick: () -> U
             Icon(icon, contentDescription = title, tint = tint, modifier = Modifier.size(26.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(title, fontSize = 11.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.DarkGray)
+        // 💡 Warna Teks Menu Otomatis
+        Text(title, fontSize = 11.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
 @Composable
 fun SectionHeader(title: String, onSeeAll: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = Color.Black)
+        // 💡 Warna Teks Judul Otomatis
+        Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
         Text("Lihat Semua", color = RitecsBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onSeeAll() })
     }
 }
@@ -362,7 +396,15 @@ fun SectionHeader(title: String, onSeeAll: () -> Unit) {
 @Composable
 fun HomeVerticalCard(title: String, subtitle: String, label: String, tagColor: Color, imageUrl: String, priceText: String, priceColor: Color, onClick: () -> Unit) {
     Column(modifier = Modifier.width(140.dp).clickable { onClick() }) {
-        Box(modifier = Modifier.fillMaxWidth().height(200.dp).border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(10.dp)).clip(RoundedCornerShape(10.dp)).background(Color(0xFFF8F9FA))) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                // 💡 Garis & Background Gambar Otomatis (Soft dark di mode malam)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
             AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(), contentDescription = title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -370,9 +412,11 @@ fun HomeVerticalCard(title: String, subtitle: String, label: String, tagColor: C
             Text(label, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = tagColor, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
         }
         Spacer(modifier = Modifier.height(6.dp))
-        Text(subtitle, fontSize = 10.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // 💡 Subtitle Otomatis (Abu-abu Kalem)
+        Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.height(34.dp))
+        // 💡 Teks Judul Otomatis (Hitam/Putih)
+        Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.height(34.dp))
         Spacer(modifier = Modifier.height(4.dp))
         Text(priceText, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = priceColor)
     }

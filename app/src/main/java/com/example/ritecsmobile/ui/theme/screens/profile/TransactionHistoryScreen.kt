@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.RetrofitClient
-import com.example.ritecsmobile.data.remote.dto.UserTransactionDto // 💡 WAJIB IMPORT INI
+import com.example.ritecsmobile.data.remote.dto.UserTransactionDto
 import kotlinx.coroutines.CancellationException
 import java.text.NumberFormat
 import java.util.Locale
@@ -34,19 +34,16 @@ fun TransactionHistoryScreen(onNavigateBack: () -> Unit) {
     val authPreferences = remember { AuthPreferences(context) }
     val token by authPreferences.authToken.collectAsState(initial = "")
 
-    // 💡 PERBAIKAN: Gunakan UserTransactionDto (TIDAK BOLEH TransactionDto)
     var transactions by remember { mutableStateOf<List<UserTransactionDto>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Warna Tema Ritecs
+    // Warna Tema Ritecs (Tetap di-hardcode untuk elemen brand)
     val ritecsBlue = Color(0xFF0062CD)
-    val ritecsLightBlue = Color(0xFF2E86EB)
 
     LaunchedEffect(token) {
         if (!token.isNullOrEmpty()) {
             isLoading = true
             try {
-                // 💡 PERBAIKAN: Panggil getUserTransactions (API Khusus User), bukan getMembershipTransactions (API Admin)
                 val response = RetrofitClient.authApi.getUserTransactions("Bearer $token")
 
                 if (response.isSuccessful) {
@@ -66,7 +63,7 @@ fun TransactionHistoryScreen(onNavigateBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            // Header Elegan Gradasi Biru
+            // Header Elegan Gradasi Biru (Tetap dipertahankan di Dark Mode)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -87,7 +84,8 @@ fun TransactionHistoryScreen(onNavigateBack: () -> Unit) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF4F6F7))
+                // 💡 Background Layar Utama Otomatis
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
             if (isLoading) {
@@ -101,10 +99,11 @@ fun TransactionHistoryScreen(onNavigateBack: () -> Unit) {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(80.dp))
+                    // 💡 Ikon & Teks Empty State Otomatis menyesuaikan tema
+                    Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f), modifier = Modifier.size(80.dp))
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Belum Ada Transaksi", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = Color.DarkGray)
-                    Text("Anda belum melakukan transaksi apapun.", color = Color.Gray, fontSize = 14.sp)
+                    Text("Belum Ada Transaksi", fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface)
+                    Text("Anda belum melakukan transaksi apapun.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                 }
             } else {
                 // List Transaksi
@@ -122,10 +121,10 @@ fun TransactionHistoryScreen(onNavigateBack: () -> Unit) {
 }
 
 @Composable
-fun UserTransactionCard(trx: UserTransactionDto) { // 💡 Ini sudah 100% cocok dengan atasnya
+fun UserTransactionCard(trx: UserTransactionDto) {
     val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(trx.amount ?: 0)
 
-    // Logika Warna dan Ikon Berdasarkan Status
+    // Logika Warna dan Ikon Berdasarkan Status (Tetap di-hardcode karena merupakan warna semantik pasti)
     val (statusColor, statusIcon, statusText) = when (trx.status.lowercase()) {
         "paid" -> Triple(Color(0xFF27AE60), Icons.Default.CheckCircle, "BERHASIL")
         "pending" -> Triple(Color(0xFFF39C12), Icons.Default.Schedule, "MENUNGGU")
@@ -136,7 +135,8 @@ fun UserTransactionCard(trx: UserTransactionDto) { // 💡 Ini sudah 100% cocok 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        // 💡 Warna Latar Kartu Otomatis
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -146,7 +146,8 @@ fun UserTransactionCard(trx: UserTransactionDto) { // 💡 Ini sudah 100% cocok 
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(trx.created_at?.take(10) ?: "-", fontSize = 12.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                // 💡 Warna Tanggal Otomatis (Abu Kalem)
+                Text(trx.created_at?.take(10) ?: "-", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
 
                 // Badge Status
                 Surface(
@@ -165,12 +166,13 @@ fun UserTransactionCard(trx: UserTransactionDto) { // 💡 Ini sudah 100% cocok 
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider(color = Color(0xFFF4F6F7))
+            // 💡 Warna Garis Pemisah Otomatis
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(modifier = Modifier.height(12.dp))
 
             // --- ISI KONTEN (Tipe & Nominal) ---
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Ikon Transaksi
+                // Ikon Transaksi (Tetap Biru Ritecs)
                 Box(
                     modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFF0062CD).copy(alpha = 0.1f)),
                     contentAlignment = Alignment.Center
@@ -185,12 +187,10 @@ fun UserTransactionCard(trx: UserTransactionDto) { // 💡 Ini sudah 100% cocok 
                         text = if (trx.type == "extendedPayments") "Perpanjangan Membership" else "Membership Baru",
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text("Trf via: ${trx.bank_name ?: "-"}", fontSize = 12.sp, color = Color.Gray)
+                    Text("Trf via: ${trx.bank_name ?: "-"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-
-                // Nominal
                 Text(formatRp, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = Color(0xFF0062CD))
             }
         }

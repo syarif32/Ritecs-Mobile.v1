@@ -99,29 +99,34 @@ fun LihatSemuaBukuScreen(
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F6FA)).padding(paddingValues)
+                // 💡 Background utama dinamis
+                modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(paddingValues)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 12.dp),
+                    // 💡 Latar belakang baris filter dinamis
+                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
                         onClick = { showSortSheet = true },
                         shape = RoundedCornerShape(20.dp),
-                        color = Color.White,
-                        border = BorderStroke(1.dp, Color.LightGray)
+                        // 💡 Warna tombol filter dinamis
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     ) {
                         Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Sort, contentDescription = "Sort", modifier = Modifier.size(18.dp), tint = Color.DarkGray)
+                            // 💡 Ikon & Teks filter dinamis
+                            Icon(Icons.Default.Sort, contentDescription = "Sort", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Urutkan: $currentSort", fontSize = 13.sp, color = Color.DarkGray, fontWeight = FontWeight.Medium)
+                            Text(text = "Urutkan: $currentSort", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Down", modifier = Modifier.size(18.dp), tint = Color.DarkGray)
+                            Icon(Icons.Default.ArrowDropDown, contentDescription = "Down", modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "${displayBooks.size} Buku", fontSize = 12.sp, color = Color.Gray)
+                    // 💡 Teks jumlah buku dinamis
+                    Text(text = "${displayBooks.size} Buku", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 if (isGridLayout) {
@@ -148,10 +153,16 @@ fun LihatSemuaBukuScreen(
     }
 
     if (showSortSheet) {
-        ModalBottomSheet(onDismissRequest = { showSortSheet = false }, sheetState = sheetState, containerColor = Color.White) {
+        ModalBottomSheet(
+            onDismissRequest = { showSortSheet = false },
+            sheetState = sheetState,
+            // 💡 Warna Modal Bottom Sheet Dinamis
+            containerColor = MaterialTheme.colorScheme.surface
+        ) {
             Column(modifier = Modifier.padding(bottom = 32.dp)) {
-                Text(text = "Urutkan Berdasarkan", fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp))
-                HorizontalDivider(color = Color(0xFFEEEEEE))
+                // 💡 Judul Sheet Dinamis
+                Text(text = "Urutkan Berdasarkan", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 // 💡 Paling Banyak Diunduh sudah ditambah lagi ke opsi
                 val sortOptions = listOf("Paling Baru", "Paling Lama", "Paling Banyak Dilihat", "Paling Banyak Diunduh", "Harga Tertinggi", "Harga Terendah")
@@ -165,7 +176,8 @@ fun LihatSemuaBukuScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = option, fontSize = 15.sp, fontWeight = if (currentSort == option) FontWeight.Bold else FontWeight.Normal, color = if (currentSort == option) MaterialTheme.colorScheme.primary else Color.Black)
+                        // 💡 Teks opsi dinamis (Primary jika dipilih, onSurface jika tidak)
+                        Text(text = option, fontSize = 15.sp, fontWeight = if (currentSort == option) FontWeight.Bold else FontWeight.Normal, color = if (currentSort == option) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
                         if (currentSort == option) Icon(Icons.Default.Check, contentDescription = "Selected", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -193,9 +205,10 @@ fun BookGridCard(book: BookDto, onClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp) // Lebih tinggi sedikit biar proporsional di grid besar
-                .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(6.dp))
+                // 💡 Border & Latar gambar dinamis
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
                 .clip(RoundedCornerShape(6.dp))
-                .background(Color(0xFFF8F9FA))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
@@ -226,10 +239,11 @@ fun BookGridCard(book: BookDto, onClick: () -> Unit) {
         Spacer(modifier = Modifier.height(6.dp))
 
         // 3. PENULIS
+        // 💡 Penulis otomatis jadi abu-abu kalem di dark mode
         Text(
             text = joinedAuthors,
             fontSize = 11.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -237,11 +251,12 @@ fun BookGridCard(book: BookDto, onClick: () -> Unit) {
         Spacer(modifier = Modifier.height(1.dp))
 
         // 4. JUDUL BUKU
+        // 💡 Judul otomatis hitam/putih
         Text(
             text = book.title,
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             lineHeight = 17.sp,
@@ -253,7 +268,8 @@ fun BookGridCard(book: BookDto, onClick: () -> Unit) {
         // 5. HARGA
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "PDF: ", fontSize = 11.sp, color = Color.Gray)
+                // 💡 Label PDF otomatis
+                Text(text = "PDF: ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     text = "GRATIS",
                     fontSize = 13.sp,
@@ -263,11 +279,12 @@ fun BookGridCard(book: BookDto, onClick: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(1.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Cetak: ", fontSize = 11.sp, color = Color.Gray)
+                // 💡 Label Cetak & Harga otomatis
+                Text(text = "Cetak: ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     text = formatToRupiah(book.print_price),
                     fontSize = 11.sp,
-                    color = Color.DarkGray,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -283,9 +300,19 @@ fun BookListCard(book: BookDto, onClick: () -> Unit) {
     val imagePath = book.cover_path?.trimStart('/') ?: "assets/published/books/book_default.png"
     val imageUrl = BASE_URL_BE + imagePath
 
-    Card(modifier = Modifier.fillMaxWidth().clickable { onClick() }, colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp), shape = RoundedCornerShape(12.dp)) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
+        // 💡 Warna Kartu Dinamis
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
-            Box(modifier = Modifier.width(100.dp).height(140.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xFFF8F9FA))) {
+            Box(
+                modifier = Modifier.width(100.dp).height(140.dp).clip(RoundedCornerShape(8.dp))
+                    // 💡 Background Gambar List Card Dinamis
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
                 AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(), contentDescription = "Cover", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
             }
             Spacer(modifier = Modifier.width(16.dp))
@@ -294,26 +321,31 @@ fun BookListCard(book: BookDto, onClick: () -> Unit) {
                     Text("🏷️ ${categoryName.uppercase()}", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1976D2), modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                 }
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(text = book.title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.Black, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)
+                // 💡 Judul Buku Dinamis
+                Text(text = book.title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Oleh: $joinedAuthors", fontSize = 12.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                // 💡 Teks Penulis Dinamis
+                Text(text = "Oleh: $joinedAuthors", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
                     Column {
-                        Text(text = "Harga Cetak: ${formatToRupiah(book.print_price)}", fontSize = 10.sp, color = Color.Gray)
+                        // 💡 Label Harga Cetak Dinamis
+                        Text(text = "Harga Cetak: ${formatToRupiah(book.print_price)}", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(text = if (book.ebook_price == null || book.ebook_price == 0) "GRATIS" else formatToRupiah(book.ebook_price), fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = if (book.ebook_price == null || book.ebook_price == 0) Color(0xFF27AE60) else MaterialTheme.colorScheme.primary)
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Tampilkan Download Count kalau di mode List
-                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                        // 💡 Ikon & Teks Download Dinamis
+                        Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("${book.download_count ?: 0}", fontSize = 12.sp, color = Color.Gray)
+                        Text("${book.download_count ?: 0}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.Gray)
+                        // 💡 Ikon & Teks Visibility Dinamis
+                        Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("${book.visitor_count ?: 0}", fontSize = 12.sp, color = Color.Gray)
+                        Text("${book.visitor_count ?: 0}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

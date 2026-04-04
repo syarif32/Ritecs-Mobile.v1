@@ -35,7 +35,9 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 // 💡 Warna Khas Ritecs
-
+val RitecsDarkBlue = Color(0xFF004191)
+val RitecsLightBlue = Color(0xFF0091FF)
+val RitecsBlue = Color(0xFF0062CD)
 
 @Composable
 fun RegisterScreen(
@@ -57,7 +59,7 @@ fun RegisterScreen(
 
     val primaryColor = MaterialTheme.colorScheme.primary
 
-    // 💡 KEMBALI MENGGUNAKAN SURFACE PUTIH CLEAN
+    // 💡 SURFACE DINAMIS UNTUK BACKGROUND
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Box(
             modifier = Modifier
@@ -86,71 +88,118 @@ fun RegisterScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // 💡 Dinamis
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth().padding(24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("Daftar Akun", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onBackground)
+                        // 💡 Teks Judul Hitam/Putih
+                        Text("Daftar Akun", fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+                        // 💡 Teks Subjudul Abu-abu Dinamis
                         Text("Bergabung bersama Ritecs", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 24.dp))
+
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            // FIELD NAMA DEPAN
                             OutlinedTextField(
                                 value = firstName, onValueChange = { firstName = it }, label = { Text("Nama Depan") },
                                 modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), singleLine = true,
-                                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0))
+                                // 💡 TextField Colors Dinamis
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = primaryColor,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    focusedLabelColor = primaryColor,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
+                            // FIELD NAMA BELAKANG
                             OutlinedTextField(
                                 value = lastName, onValueChange = { lastName = it }, label = { Text("Nama Belakang") },
                                 modifier = Modifier.weight(1f), shape = RoundedCornerShape(12.dp), singleLine = true,
-                                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0))
+                                // 💡 TextField Colors Dinamis
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = primaryColor,
+                                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    focusedLabelColor = primaryColor,
+                                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // EMAIL
+                        // FIELD EMAIL
                         OutlinedTextField(
                             value = email, onValueChange = { email = it }, label = { Text("Email Address") },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0))
+                            // 💡 TextField Colors Dinamis
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = primaryColor,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = primaryColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // PASSWORD DENGAN MATA
+                        // FIELD PASSWORD DENGAN MATA
                         OutlinedTextField(
                             value = password, onValueChange = { password = it }, label = { Text("Password (Min. 8)") },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
                                 val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                                IconButton(onClick = { passwordVisible = !passwordVisible }) { Icon(imageVector = image, contentDescription = null, tint = Color.Gray) }
+                                // 💡 Warna Mata Dinamis
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) { Icon(imageVector = image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) }
                             },
                             modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0))
+                            // 💡 TextField Colors Dinamis
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = primaryColor,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = primaryColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // KONFIRMASI PASSWORD DENGAN MATA
+                        // FIELD KONFIRMASI PASSWORD DENGAN MATA
                         OutlinedTextField(
                             value = confirmPassword, onValueChange = { confirmPassword = it }, label = { Text("Konfirmasi Password") },
                             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                             trailingIcon = {
                                 val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) { Icon(imageVector = image, contentDescription = null, tint = Color.Gray) }
+                                // 💡 Warna Mata Dinamis
+                                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) { Icon(imageVector = image, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant) }
                             },
                             modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), singleLine = true,
-                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = primaryColor, unfocusedBorderColor = Color(0xFFE2E8F0))
+                            // 💡 TextField Colors Dinamis
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = primaryColor,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                focusedLabelColor = primaryColor,
+                                unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 💡 TOMBOL DAFTAR (DIBIKIN GRADASI BIRU KEREN)
+                        // 💡 TOMBOL DAFTAR (TETAP GRADASI BIRU)
                         Button(
                             onClick = {
                                 if (firstName.isNotEmpty() && email.isNotEmpty() && password.length >= 8) {
@@ -204,18 +253,20 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // PEMISAH KEMBALI WARNA NORMAL
+                // PEMISAH "ATAU"
                 Row(modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically) {
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
-                    Text(" ATAU ", fontSize = 12.sp, color = Color(0xFF64748B), modifier = Modifier.padding(horizontal = 8.dp))
-                    HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFCBD5E1))
+                    // 💡 Garis Pemisah Dinamis
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
+                    // 💡 Teks ATAU Dinamis
+                    Text(" ATAU ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 8.dp))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
 
-                // TOMBOL GOOGLE KEMBALI WARNA NORMAL
+                // TOMBOL GOOGLE
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -225,7 +276,7 @@ fun RegisterScreen(
                                     .addCredentialOption(
                                         com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
                                             .setFilterByAuthorizedAccounts(false)
-                                            .setServerClientId("Y74205596232-8shtov9l8k950qh1dapa4uvvk6os8lvj.apps.googleusercontent.com")
+                                            .setServerClientId("74205596232-8shtov9l8k950qh1dapa4uvvk6os8lvj.apps.googleusercontent.com")
                                             .setAutoSelectEnabled(false).build()
                                     ).build()
 
@@ -257,21 +308,29 @@ fun RegisterScreen(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(0.9f).height(50.dp), shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground, containerColor = MaterialTheme.colorScheme.surface),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)), enabled = !isGoogleLoading
+                    // 💡 Warna tombol Google dinamis
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    enabled = !isGoogleLoading
                 ) {
                     if (isGoogleLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     else {
                         Image(painter = painterResource(id = R.drawable.ic_google), contentDescription = null, modifier = Modifier.size(20.dp).padding(end = 8.dp))
-                        Text("Lanjutkan dengan Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        // 💡 Teks Lanjutkan dengan Google Dinamis
+                        Text("Lanjutkan dengan Google", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // LINK LOGIN KEMBALI WARNA NORMAL
+                // LINK LOGIN BAWAH
                 Row(modifier = Modifier.padding(bottom = 32.dp), verticalAlignment = Alignment.CenterVertically) {
+                    // 💡 Teks Label Dinamis
                     Text("Sudah punya akun? ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                    // 💡 Teks Link tetap Primary (Biru)
                     Text("Masuk di sini", color = primaryColor, fontWeight = FontWeight.Bold, fontSize = 14.sp, modifier = Modifier.clickable { onNavigateBack() })
                 }
             }

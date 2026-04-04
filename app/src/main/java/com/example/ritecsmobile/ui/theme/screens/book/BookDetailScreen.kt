@@ -69,18 +69,22 @@ fun BookDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Detail Buku", fontWeight = FontWeight.Bold) },
+                // 💡 Judul Otomatis Hitam/Putih
+                title = { Text("Detail Buku", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali") }
+                    // 💡 Ikon Back Otomatis
+                    IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onSurface) }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                // 💡 Background TopBar Otomatis
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         bottomBar = {
             // LOGIKA 2: TOMBOL UNDUH
             Surface(
                 shadowElevation = 8.dp,
-                color = Color.White,
+                // 💡 Background BottomBar Otomatis
+                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
@@ -107,6 +111,7 @@ fun BookDetailScreen(
                         }
                     },
                     modifier = Modifier.padding(16.dp).fillMaxWidth().height(50.dp),
+                    // 💡 Warna tombol tetap primary agar mencolok, dan teksnya tetap putih
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -120,14 +125,16 @@ fun BookDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFF5F6FA))
+                // 💡 Background keseluruhan otomatis
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
+                    // 💡 Latar belakang area cover buku otomatis
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(vertical = 32.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -147,29 +154,33 @@ fun BookDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .background(Color.White)
+                    // 💡 Background area detail teks otomatis
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(24.dp)
             ) {
                 Text(
                     text = book.title,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black,
+                    // 💡 Judul Otomatis (Hitam/Putih)
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 30.sp
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                    // 💡 Ikon & Teks View otomatis (Abu-abu kalem)
+                    Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("$visitorCount x dilihat", fontSize = 13.sp, color = Color.Gray)
+                    Text("$visitorCount x dilihat", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
+                    // 💡 Ikon & Teks Download otomatis
+                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("$downloadCount x diunduh", fontSize = 13.sp, color = Color.Gray)
+                    Text("$downloadCount x diunduh", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -189,25 +200,31 @@ fun BookDetailScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                    Text("Harga", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.weight(0.35f))
+                    // 💡 Label Harga Otomatis
+                    Text("Harga", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(0.35f))
                     Column(modifier = Modifier.weight(0.65f)) {
+                        // Harga Gratis tetap Hijau agar jadi "Semantic Color"
                         Text("Rp 0 (pdf)", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF27AE60))
                         if (book.print_price != null && book.print_price > 0) {
-                            Text("Cetak: ${formatToRupiah(book.print_price)}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                            // 💡 Nilai Cetak Otomatis
+                            Text("Cetak: ${formatToRupiah(book.print_price)}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-                HorizontalDivider(color = Color(0xFFEEEEEE))
+                // 💡 Garis Pemisah Otomatis
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Sinopsis :", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                // 💡 Label Sinopsis Otomatis
+                Text("Sinopsis :", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = book.synopsis ?: "Tidak ada sinopsis untuk buku ini.",
                     fontSize = 14.sp,
-                    color = Color.DarkGray,
+                    // 💡 Isi Sinopsis Otomatis (Abu-abu kalem)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 24.sp,
                     textAlign = TextAlign.Justify
                 )
@@ -225,8 +242,10 @@ fun DetailRow(label: String, value: String) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.Top
     ) {
-        Text(text = label, fontSize = 14.sp, color = Color.Gray, modifier = Modifier.weight(0.35f))
-        Text(text = " :  $value", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = Color.Black, modifier = Modifier.weight(0.65f))
+        // 💡 Label Kiri (Abu-abu Otomatis)
+        Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(0.35f))
+        // 💡 Value Kanan (Hitam/Putih Otomatis)
+        Text(text = " :  $value", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(0.65f))
     }
 }
 

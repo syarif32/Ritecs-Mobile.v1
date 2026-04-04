@@ -39,9 +39,8 @@ import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.JournalDto
 import com.example.ritecsmobile.ui.theme.screens.book.BASE_URL_BE
 
-// 💡 Warna Tema Baru Ritecs
+// 💡 Warna Tema Baru Ritecs (Dipertahankan untuk elemen semantik)
 val RitecsBlue = Color(0xFF0062CD)
-val BackgroundSoft = Color(0xFFF8FAFC)
 val TagGreen = Color(0xFF27AE60)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,11 +75,13 @@ fun JurnalScreen() {
     }
 
     Scaffold(
+        // 💡 Latar belakang utama dinamis
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             // Top Bar Modern dengan Search Bar & Logo Mini
-            Surface(color = Color.White, shadowElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
+            // 💡 Surface Top Bar Dinamis
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-//                    Text("Jurnal Publikasi", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Row(
@@ -91,12 +92,13 @@ fun JurnalScreen() {
                         OutlinedTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            placeholder = { Text("Cari Judul atau Keyword...", color = Color.Gray, fontSize = 13.sp) },
-                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                            // 💡 Teks Placeholder Dinamis
+                            placeholder = { Text("Cari Judul atau Keyword...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
                                     IconButton(onClick = { searchQuery = "" }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.Gray, modifier = Modifier.size(20.dp))
+                                        Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                                     }
                                 }
                             },
@@ -104,11 +106,15 @@ fun JurnalScreen() {
                                 .weight(1f)
                                 .height(50.dp),
                             shape = RoundedCornerShape(24.dp),
+                            // 💡 Warna TextField Dinamis
                             colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedBorderColor = Color.LightGray,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                                 focusedBorderColor = RitecsBlue,
-                                unfocusedContainerColor = Color(0xFFF1F5F9),
-                                focusedContainerColor = Color.White
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                cursorColor = RitecsBlue
                             ),
                             singleLine = true
                         )
@@ -118,7 +124,8 @@ fun JurnalScreen() {
                         // LOGO MINI (TOMBOL POP-UP)
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFF1F5F9),
+                            // 💡 Warna Latar Ikon Dinamis
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier
                                 .size(50.dp)
                                 .clickable { showInfoDialog = true } // 💡 Memicu Pop-up
@@ -139,7 +146,8 @@ fun JurnalScreen() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundSoft)
+                // 💡 Latar area konten dinamis
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
             if (isLoading) {
@@ -150,11 +158,12 @@ fun JurnalScreen() {
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(16.dp))
+                    // 💡 Teks empty state dinamis
                     Text(
                         text = if (searchQuery.isNotEmpty()) "Jurnal tidak ditemukan" else "Belum ada jurnal yang diterbitkan.",
-                        color = Color.Gray, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
+                        color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 15.sp, fontWeight = FontWeight.SemiBold
                     )
                 }
             } else {
@@ -180,17 +189,20 @@ fun JurnalScreen() {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(painter = painterResource(id = R.drawable.ritecs_logo), contentDescription = null, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Portal Jurnal Ritecs", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        // 💡 Teks Judul Pop-up Dinamis
+                        Text("Portal Jurnal Ritecs", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurface)
                     }
                 },
                 text = {
                     Column {
+                        // 💡 Teks Deskripsi Pop-up Dinamis (Abu-abu)
                         Text(
                             text = "Selamat datang di repositori jurnal publikasi ilmiah Ritecs. Kami mendedikasikan platform ini untuk menyebarluaskan hasil riset inovatif dan teknologi terkini.",
-                            fontSize = 13.sp, color = Color.DarkGray, lineHeight = 20.sp, textAlign = TextAlign.Justify
+                            fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 20.sp, textAlign = TextAlign.Justify
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Kunjungi portal resmi kami di:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        // 💡 Teks Keterangan Link Dinamis
+                        Text("Kunjungi portal resmi kami di:", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                         Spacer(modifier = Modifier.height(4.dp))
 
                         // 💡 LINK BISA DIKLIK LANGSUNG KE BROWSER
@@ -198,7 +210,7 @@ fun JurnalScreen() {
                             text = "https://ritecs.org/journal/",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = RitecsBlue,
+                            color = RitecsBlue, // Tetap biru agar menonjol sebagai link
                             textDecoration = TextDecoration.Underline,
                             modifier = Modifier.clickable {
                                 uriHandler.openUri("https://ritecs.org/journal/")
@@ -212,11 +224,12 @@ fun JurnalScreen() {
                         colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Tutup Mengerti", fontWeight = FontWeight.Bold)
+                        Text("Tutup Mengerti", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 },
                 shape = RoundedCornerShape(16.dp),
-                containerColor = Color.White
+                // 💡 Latar Belakang Dialog Dinamis
+                containerColor = MaterialTheme.colorScheme.surface
             )
         }
     }
@@ -245,7 +258,8 @@ fun JournalListCard(journal: JournalDto) {
                     Toast.makeText(context, "Link portal belum tersedia", Toast.LENGTH_SHORT).show()
                 }
             },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        // 💡 Warna Latar Kartu Dinamis
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -259,8 +273,9 @@ fun JournalListCard(journal: JournalDto) {
                     .width(90.dp)
                     .height(130.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF8F9FA))
-                    .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(8.dp))
+                    // 💡 Warna Border & Gambar Placeholder Dinamis
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -290,11 +305,12 @@ fun JournalListCard(journal: JournalDto) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // 💡 Judul Jurnal Dinamis (Hitam/Putih)
                 Text(
                     text = journal.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     lineHeight = 20.sp,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
@@ -302,10 +318,11 @@ fun JournalListCard(journal: JournalDto) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
+                // 💡 Keywords Dinamis (Abu-abu)
                 Text(
                     text = "Keywords: $joinedKeywords",
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 16.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis

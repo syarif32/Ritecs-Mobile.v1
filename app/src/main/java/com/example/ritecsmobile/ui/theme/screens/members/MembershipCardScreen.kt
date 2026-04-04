@@ -40,7 +40,6 @@ import kotlinx.coroutines.*
 
 
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MembershipCardScreen(onNavigateBack: () -> Unit) {
@@ -76,6 +75,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.White) }
                 },
+                // 💡 TopBar tetap RitecsBlue agar konsisten identitasnya
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = RitecsBlue, titleContentColor = Color.White)
             )
         }
@@ -88,24 +88,27 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BackgroundSoft)
+                    // 💡 Latar Belakang Layar Otomatis (Terang/Gelap menyesuaikan HP)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 24.dp, vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // 💡 Warna Teks Judul Otomatis (Hitam/Putih)
                 Text(
                     text = "Kartu Digital Eksklusif",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Start
                 )
+                // 💡 Warna Teks Deskripsi Otomatis (Abu-abu)
                 Text(
                     text = "Tunjukkan kartu ini untuk mendapatkan benefit layanan Ritecs.",
                     fontSize = 13.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                     textAlign = TextAlign.Start
                 )
@@ -132,7 +135,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                             Box(modifier = Modifier.fillMaxSize().background(RitecsBlue))
                         }
 
-                        // 💡 GRADASI GELAP DI BAWAH (Biar teks putih selalu terbaca)
+                        // 💡 GRADASI GELAP DI BAWAH (Tetap dipertahankan agar teks putih selalu terbaca)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -145,7 +148,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                                 )
                         )
 
-                        // Konten Teks & QR Code
+                        // Konten Teks & QR Code (TETAP PUTIH KARENA ADA DI ATAS GAMBAR KARTU)
                         Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
                             // Nama dan ID (Kiri Bawah)
                             Column(modifier = Modifier.align(Alignment.BottomStart)) {
@@ -153,14 +156,14 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                                     text = "${userData?.first_name ?: ""} ${userData?.last_name ?: ""}".uppercase(),
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White
+                                    color = Color.White // 💡 Tetap Putih
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "ID: ${userData?.member_number ?: "-"}",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Medium,
-                                    color = Color.White.copy(alpha = 0.9f)
+                                    color = Color.White.copy(alpha = 0.9f) // 💡 Tetap Putih
                                 )
                             }
 
@@ -172,7 +175,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                                 modifier = Modifier
                                     .size(65.dp)
                                     .align(Alignment.BottomEnd)
-                                    .background(Color.White, RoundedCornerShape(8.dp))
+                                    .background(Color.White, RoundedCornerShape(8.dp)) // Frame QR Code tetap putih agar scan gampang
                                     .padding(6.dp)
                                     .clip(RoundedCornerShape(4.dp))
                             )
@@ -190,7 +193,8 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Box(modifier = Modifier.fillMaxSize().background(Color.LightGray)) {
+                    // 💡 Latar Belakang fallback kalau gambar gagal dimuat, ikutin warna kartu Surface
+                    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
                         val backUrl = userData?.card_back_image_path?.let {
                             if (it.startsWith("http")) it else BASE_URL_BE + it.trimStart('/')
                         }
@@ -218,6 +222,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
                     },
                     modifier = Modifier.fillMaxWidth().height(55.dp),
                     shape = RoundedCornerShape(12.dp),
+                    // 💡 Tombol tetap RitecsBlue agar mencolok dan identitas brand kuat
                     colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue)
                 ) {
                     Icon(Icons.Default.Download, contentDescription = null, tint = Color.White)
@@ -232,7 +237,7 @@ fun MembershipCardScreen(onNavigateBack: () -> Unit) {
 }
 
 // ==========================================================
-// FUNGSI STANDALONE UNTUK SAVE KE GALERI
+// FUNGSI STANDALONE UNTUK SAVE KE GALERI (TIDAK ADA YANG DIUBAH)
 // ==========================================================
 fun saveCardToGallery(context: Context, scope: CoroutineScope, frontUrl: String, backUrl: String) {
     Toast.makeText(context, "Mempersiapkan unduhan...", Toast.LENGTH_SHORT).show()

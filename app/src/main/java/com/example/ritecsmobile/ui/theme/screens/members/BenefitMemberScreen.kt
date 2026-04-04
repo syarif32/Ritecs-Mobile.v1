@@ -43,7 +43,6 @@ import java.io.FileOutputStream
 import java.util.Calendar
 import kotlinx.coroutines.CancellationException
 
-// 💡 Warna Tema Ritecs
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -134,6 +133,7 @@ fun MemberRegistrationScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.White) }
                 },
+
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = RitecsBlue, titleContentColor = Color.White)
             )
         }
@@ -146,7 +146,8 @@ fun MemberRegistrationScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(BackgroundSoft)
+                    // 💡 Latar belakang otomatis (Terang: Abu muda, Gelap: Navy Slate)
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(scrollState)
                     .padding(20.dp)
@@ -157,7 +158,8 @@ fun MemberRegistrationScreen(
                 if (userData?.is_member == true) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        // 💡 Warna Kartu Otomatis
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -167,22 +169,26 @@ fun MemberRegistrationScreen(
                             Text("Keanggotaan Aktif", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF27AE60))
                             Spacer(modifier = Modifier.height(24.dp))
 
-                            HorizontalDivider(color = Color(0xFFEEEEEE))
+                            // 💡 Garis pemisah dinamis
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Spacer(modifier = Modifier.height(16.dp))
 
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Nama Lengkap", color = Color.Gray, fontSize = 14.sp)
-                                Text("${userData?.first_name} ${userData?.last_name ?: ""}", fontWeight = FontWeight.Bold, color = Color.Black)
+                                // 💡 Teks Label (Abu-abu Kalem)
+                                Text("Nama Lengkap", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                                // 💡 Teks Value (Otomatis Hitam/Putih)
+                                Text("${userData?.first_name} ${userData?.last_name ?: ""}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text("Nomor ID Member", color = Color.Gray, fontSize = 14.sp)
+                                Text("Nomor ID Member", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                                 Text(userData?.member_number ?: "-", fontWeight = FontWeight.ExtraBold, color = RitecsBlue)
                             }
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
+                        // 💡 Eksekusi callback navigasi ke kartu
                         onClick = onSuccess,
                         modifier = Modifier.fillMaxWidth().height(50.dp),
                         shape = RoundedCornerShape(12.dp),
@@ -200,7 +206,8 @@ fun MemberRegistrationScreen(
                 else if (userData?.has_pending_transaction == true) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        // 💡 Warna Kartu Otomatis
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -209,10 +216,12 @@ fun MemberRegistrationScreen(
                             Spacer(modifier = Modifier.height(16.dp))
                             Text("Transaksi Diproses", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFF39C12))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Pendaftaran membership Anda sedang diverifikasi oleh Admin. Harap tunggu beberapa saat.", textAlign = TextAlign.Center, color = Color.Gray, fontSize = 14.sp)
+                            // 💡 Teks Keterangan Dinamis
+                            Text("Pendaftaran membership Anda sedang diverifikasi oleh Admin. Harap tunggu beberapa saat.", textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
 
                             Spacer(modifier = Modifier.height(24.dp))
-                            HorizontalDivider(color = Color(0xFFEEEEEE))
+                            // 💡 Garis pemisah dinamis
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                             Spacer(modifier = Modifier.height(24.dp))
 
                             Button(
@@ -238,22 +247,29 @@ fun MemberRegistrationScreen(
                     // Harga Membership
                     Card(
                         modifier = Modifier.fillMaxWidth(),
+                        // 💡 Biar elegan, di Dark Mode warna birunya agak transparan
                         colors = CardDefaults.cardColors(containerColor = RitecsBlue.copy(alpha = 0.1f)),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Column(modifier = Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             Text("Biaya Keanggotaan", fontSize = 14.sp, color = RitecsBlue)
                             Text(benefitData?.price ?: "Rp 150.000", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = RitecsBlue)
-                            Text(benefitData?.price_description ?: "Berlaku untuk 1 Tahun", fontSize = 13.sp, color = Color.DarkGray)
+                            // 💡 Warna Teks otomatis
+                            Text(benefitData?.price_description ?: "Berlaku untuk 1 Tahun", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text("Formulir Pendaftaran", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                    // 💡 Warna Judul Otomatis
+                    Text("Formulir Pendaftaran", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(modifier = Modifier.height(12.dp))
 
                     // --- FORM IDENTITAS ---
-                    Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(2.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             FormGroupTitle("1. Data Identitas", Icons.Default.Badge)
                             Spacer(modifier = Modifier.height(12.dp))
@@ -279,7 +295,11 @@ fun MemberRegistrationScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // --- FORM KONTAK ---
-                    Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(2.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             FormGroupTitle("2. Kontak & Domisili", Icons.Default.LocationCity)
                             Spacer(modifier = Modifier.height(12.dp))
@@ -299,7 +319,11 @@ fun MemberRegistrationScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // --- FORM PEMBAYARAN ---
-                    Card(colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(2.dp)) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(2.dp)
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             FormGroupTitle("3. Verifikasi Pembayaran", Icons.Default.AccountBalanceWallet)
                             Spacer(modifier = Modifier.height(12.dp))
@@ -310,7 +334,17 @@ fun MemberRegistrationScreen(
                                     onValueChange = {}, readOnly = true, label = { Text("Pilih Bank Tujuan Transfer*") },
                                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedBankMenu) },
                                     modifier = Modifier.fillMaxWidth().menuAnchor(),
-                                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue, focusedLabelColor = RitecsBlue, cursorColor = RitecsBlue)
+                                    // 💡 Penyesuaian warna Dropdown agar dinamis
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedBorderColor = RitecsBlue,
+                                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                        focusedLabelColor = RitecsBlue,
+                                        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                        cursorColor = RitecsBlue
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
                                 )
                                 ExposedDropdownMenu(expanded = expandedBankMenu, onDismissRequest = { expandedBankMenu = false }) {
                                     banks.forEach { bank ->
@@ -403,7 +437,18 @@ fun RitecsOutlinedTextField(
         value = value, onValueChange = onValueChange, label = { Text(label, fontSize = 13.sp) },
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType), readOnly = readOnly,
         singleLine = true, modifier = modifier, trailingIcon = trailingIcon,
-        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue, focusedLabelColor = RitecsBlue, cursorColor = RitecsBlue),
+        // 💡 Penyesuaian TextField agar Dinamis
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = RitecsBlue,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedLabelColor = RitecsBlue,
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            cursorColor = RitecsBlue,
+            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            disabledTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+        ),
         shape = RoundedCornerShape(8.dp)
     )
 }

@@ -50,7 +50,6 @@ fun PelatihanScreen(
 
     // Warna lokal agar tidak bentrok dengan BerandaScreen
     val ritecsBlue = Color(0xFF0062CD)
-    val backgroundSoft = Color(0xFFF5F6FA)
 
     LaunchedEffect(Unit) {
         try {
@@ -65,13 +64,13 @@ fun PelatihanScreen(
 
     Scaffold(
         topBar = {
-            Surface(color = Color.White, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
                 TopAppBar(
-                    title = { Text("Pusat Pelatihan", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black) },
+                    title = { Text("Pusat Pelatihan", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface) },
                     navigationIcon = {
-                        IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.Black) }
+                        IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onSurface) }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
                 )
             }
         }
@@ -79,7 +78,7 @@ fun PelatihanScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundSoft)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
         ) {
             if (isLoading) {
@@ -95,7 +94,7 @@ fun PelatihanScreen(
                     if (trainings.isEmpty()) {
                         item {
                             Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                                Text("Belum ada program pelatihan.", color = Color.Gray)
+                                Text("Belum ada program pelatihan.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     } else {
@@ -109,7 +108,7 @@ fun PelatihanScreen(
                     if (!hakiServices.isNullOrEmpty()) {
                         item {
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(trainingData?.haki_title ?: "Layanan Pendukung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                            Text(trainingData?.haki_title ?: "Layanan Pendukung", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                         items(hakiServices) { service ->
@@ -126,7 +125,7 @@ fun PelatihanScreen(
                                         Text(service.title ?: "Layanan", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp, color = ritecsBlue)
                                         if (!service.description.isNullOrEmpty()) {
                                             Spacer(modifier = Modifier.height(4.dp))
-                                            Text(service.description, fontSize = 12.sp, color = Color.DarkGray)
+                                            Text(service.description, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                     }
                                 }
@@ -159,7 +158,7 @@ fun TrainingListCard(training: TrainingDto, ritecsBlue: Color, onClick: () -> Un
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -172,8 +171,8 @@ fun TrainingListCard(training: TrainingDto, ritecsBlue: Color, onClick: () -> Un
                 modifier = Modifier
                     .size(90.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFF8F9FA))
-                    .border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.background)
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(8.dp))
             ) {
                 if (imageUrl != null) {
                     AsyncImage(
@@ -181,7 +180,7 @@ fun TrainingListCard(training: TrainingDto, ritecsBlue: Color, onClick: () -> Un
                         contentDescription = "Cover", contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    Icon(Icons.Default.School, contentDescription = null, tint = Color.LightGray, modifier = Modifier.align(Alignment.Center).size(32.dp))
+                    Icon(Icons.Default.School, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.align(Alignment.Center).size(32.dp))
                 }
             }
 
@@ -194,13 +193,13 @@ fun TrainingListCard(training: TrainingDto, ritecsBlue: Color, onClick: () -> Un
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
-                Text(training.title ?: "Nama Program", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.Black, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)
+                Text(training.title ?: "Nama Program", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)
 
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(training.schedule ?: "Jadwal Menyusul", fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(training.schedule ?: "Jadwal Menyusul", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -218,7 +217,6 @@ fun PelatihanDetailScreen(
 ) {
     val context = LocalContext.current
     val ritecsBlue = Color(0xFF0062CD)
-    val backgroundSoft = Color(0xFFF5F6FA)
     val tagGreen = Color(0xFF27AE60)
 
     val imageUrl = training.image_path?.let { path ->
@@ -236,26 +234,26 @@ fun PelatihanDetailScreen(
 
     Scaffold(
         topBar = {
-            Surface(color = Color.White, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
                 TopAppBar(
-                    title = { Text("Detail Pelatihan", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black) },
+                    title = { Text("Detail Pelatihan", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface) },
                     navigationIcon = {
-                        IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = Color.Black) }
+                        IconButton(onClick = onNavigateBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = MaterialTheme.colorScheme.onSurface) }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
                 )
             }
         },
         bottomBar = {
             // 💡 TOMBOL DAFTAR MELAYANG DI BAWAH (STICKY BOTTOM BAR)
-            Surface(color = Color.White, shadowElevation = 16.dp) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 16.dp) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Biaya Investasi", fontSize = 12.sp, color = Color.Gray)
+                        Text("Biaya Investasi", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(training.price ?: "Hubungi Admin", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = tagGreen)
                     }
                     Button(
@@ -280,7 +278,7 @@ fun PelatihanDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundSoft)
+                .background(MaterialTheme.colorScheme.background)
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -289,7 +287,7 @@ fun PelatihanDetailScreen(
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
                     contentDescription = "Cover", contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth().height(220.dp).background(Color.LightGray)
+                    modifier = Modifier.fillMaxWidth().height(220.dp).background(MaterialTheme.colorScheme.surfaceVariant)
                 )
             }
 
@@ -299,14 +297,14 @@ fun PelatihanDetailScreen(
                     Text("🎓 PROGRAM PELATIHAN", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = ritecsBlue, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(training.title ?: "Nama Program", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black, lineHeight = 28.sp)
+                Text(training.title ?: "Nama Program", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface, lineHeight = 28.sp)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 3. KOTAK INFO SINGKAT (Jadwal & Kontak)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(1.dp)
                 ) {
@@ -315,19 +313,19 @@ fun PelatihanDetailScreen(
                             Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = ritecsBlue, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Jadwal Pelaksanaan", fontSize = 12.sp, color = Color.Gray)
-                                Text(training.schedule ?: "-", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                                Text("Jadwal Pelaksanaan", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(training.schedule ?: "-", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Divider(color = Color(0xFFF0F0F0))
+                        Divider(color = MaterialTheme.colorScheme.outlineVariant)
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Person, contentDescription = null, tint = ritecsBlue, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Contact Person", fontSize = 12.sp, color = Color.Gray)
-                                Text(training.contact_person ?: "Admin Ritecs", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                                Text("Contact Person", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(training.contact_person ?: "Admin Ritecs", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                         }
                     }
@@ -336,16 +334,17 @@ fun PelatihanDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // 4. DESKRIPSI LENGKAP
-                Text("Deskripsi Pelatihan", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
+                Text("Deskripsi Pelatihan", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = training.description ?: "Belum ada deskripsi untuk pelatihan ini.",
-                    fontSize = 14.sp, color = Color.DarkGray, lineHeight = 22.sp,
+                    fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, lineHeight = 22.sp,
                     textAlign = TextAlign.Justify
                 )
 
                 if (!training.price_note.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(16.dp))
+                    // Warna kuning alert ini dipertahankan karena ini "Semantic Color" (Peringatan/Catatan)
                     Surface(color = Color(0xFFFFF3CD), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
                         Text("Catatan: ${training.price_note}", modifier = Modifier.padding(12.dp), fontSize = 12.sp, color = Color(0xFF856404))
                     }

@@ -38,6 +38,7 @@ fun formatToRupiah(amount: Int?): String {
     return formatRupiah.format(amount).replace(",00", "")
 }
 
+@OptIn(ExperimentalMaterial3Api::class) // 💡 Ditambahkan karena Scaffold ada yg butuh ini
 @Composable
 fun BukuScreen(
     onNavigateToDetail: (BookDto) -> Unit = {},
@@ -74,26 +75,34 @@ fun BukuScreen(
     val popularBooks = filteredBooks.sortedByDescending { it.visitor_count ?: 0 }
 
     Scaffold(
+        // 💡 Background utama otomatis
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            Surface(color = Color.White, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 2.dp, modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Cari Judul Buku atau Penulis ", color = Color.Gray, fontSize = 14.sp) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.Gray) },
+                    // 💡 Teks Placeholder otomatis
+                    placeholder = { Text("Cari Judul Buku atau Penulis ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear", tint = Color.Gray)
+                                Icon(Icons.Default.Clear, contentDescription = "Clear", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).height(50.dp),
                     shape = RoundedCornerShape(24.dp),
+                    // 💡 Warna Input Field Dinamis
                     colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedBorderColor = Color.LightGray,
-                        unfocusedContainerColor = Color(0xFFF8F9FA),
-                        focusedContainerColor = Color.White
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedBorderColor = Color(0xFF0062CD), // RitecsBlue
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        cursorColor = Color(0xFF0062CD)
                     ),
                     singleLine = true
                 )
@@ -102,21 +111,23 @@ fun BukuScreen(
     ) { paddingValues ->
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color(0xFF0062CD))
             }
         } else if (filteredBooks.isEmpty() && searchQuery.isNotEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Buku tidak ditemukan", color = Color.Gray, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    // 💡 Teks Empty State Dinamis
+                    Text("Buku tidak ditemukan", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    // 💡 Background Scrollable Dinamis
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
@@ -177,8 +188,10 @@ fun SectionHeader(title: String, onSeeAllClick: () -> Unit) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = Color.Black)
-        Text(text = "Lihat Semua", fontSize = 11.sp, color = Color.Gray, modifier = Modifier.clickable { onSeeAllClick() })
+        // 💡 Warna Teks Judul Hitam/Putih Dinamis
+        Text(text = title, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurface)
+        // 💡 Warna Teks "Lihat Semua"
+        Text(text = "Lihat Semua", fontSize = 11.sp, color = Color(0xFF0062CD), fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onSeeAllClick() })
     }
 }
 
@@ -186,11 +199,13 @@ fun SectionHeader(title: String, onSeeAllClick: () -> Unit) {
 fun CategoryChip(name: String) {
     Box(
         modifier = Modifier
-            .border(1.dp, Color.LightGray, RoundedCornerShape(20.dp))
-            .background(Color.White, RoundedCornerShape(20.dp))
+            // 💡 Warna Border & Latar Chip Dinamis
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
             .padding(horizontal = 16.dp, vertical = 7.dp)
     ) {
-        Text(text = name, fontSize = 12.sp, color = Color.DarkGray)
+        // 💡 Warna Teks Chip Dinamis
+        Text(text = name, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -203,8 +218,10 @@ fun GramediaBookCard(book: BookDto, onClick: () -> Unit) {
 
     Column(modifier = Modifier.width(135.dp).clickable { onClick() }) {
         Box(
-            modifier = Modifier.fillMaxWidth().height(190.dp).border(1.dp, Color(0xFFEEEEEE), RoundedCornerShape(6.dp))
-                .clip(RoundedCornerShape(6.dp)).background(Color(0xFFF8F9FA))
+            modifier = Modifier.fillMaxWidth().height(190.dp)
+                // 💡 Border & Latar Belakang Gambar Dinamis
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(6.dp)).background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current).data(imageUrl).crossfade(true).build(),
@@ -222,20 +239,25 @@ fun GramediaBookCard(book: BookDto, onClick: () -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(6.dp))
-        Text(text = joinedAuthors, fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        // 💡 Penulis Abu-abu Otomatis
+        Text(text = joinedAuthors, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(1.dp))
-        Text(text = book.title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.Black, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.height(34.dp))
+        // 💡 Judul Buku Hitam/Putih Otomatis
+        Text(text = book.title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.height(34.dp))
         Spacer(modifier = Modifier.height(4.dp))
 
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "PDF: ", fontSize = 11.sp, color = Color.Gray)
+                // 💡 Label PDF Otomatis
+                Text(text = "PDF: ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(text = "GRATIS", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF27AE60))
             }
             Spacer(modifier = Modifier.height(1.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Cetak: ", fontSize = 11.sp, color = Color.Gray)
-                Text(text = formatToRupiah(book.print_price), fontSize = 11.sp, color = Color.DarkGray, fontWeight = FontWeight.Bold)
+                // 💡 Label Cetak Otomatis
+                Text(text = "Cetak: ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // 💡 Harga Cetak Otomatis Hitam/Putih
+                Text(text = formatToRupiah(book.print_price), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
             }
         }
     }
