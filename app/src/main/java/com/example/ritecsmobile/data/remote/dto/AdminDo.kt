@@ -1,5 +1,7 @@
 package com.example.ritecsmobile.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class ActivationResponse(
     val status: String,
     val data: List<ActivationRequestDto>
@@ -39,27 +41,43 @@ data class AdminDashboardResponse(
     val data: AdminDashboardData
 )
 
+//data class AdminDashboardData(
+//    // Revenue Stats
+//    val totalRevenue: Long,
+//    val monthlyGrowth: Double,
+//    val successRate: Double,
+//    val revenueGrowth: Double,
+//    val todayRevenue: Long,
+//
+//    // Content Stats
+//    val totalContent: Int,
+//    val totalBooks: Int,
+//    val totalJournals: Int,
+//    val totalWriters: Int,
+//
+//    // User Stats
+//    val totalUsers: Int,
+//    val activeMemberships: Int,
+//    val regularUsers: Int,
+//
+//    // Recent Transactions
+//    val recentTransactions: List<TransactionDto>
+//)
+
 data class AdminDashboardData(
-    // Revenue Stats
-    val totalRevenue: Long,
-    val monthlyGrowth: Double,
-    val successRate: Double,
-    val revenueGrowth: Double,
-    val todayRevenue: Long,
-
-    // Content Stats
-    val totalContent: Int,
-    val totalBooks: Int,
-    val totalJournals: Int,
-    val totalWriters: Int,
-
-    // User Stats
-    val totalUsers: Int,
-    val activeMemberships: Int,
-    val regularUsers: Int,
-
-    // Recent Transactions
-    val recentTransactions: List<TransactionDto>
+    val totalRevenue: Long? = 0L,
+    val monthlyGrowth: Double? = 0.0,
+    val successRate: Double? = 0.0,
+    val revenueGrowth: Double? = 0.0,
+    val todayRevenue: Long? = 0L,
+    val totalContent: Int? = 0,
+    val totalBooks: Int? = 0,
+    val totalJournals: Int? = 0,
+    val totalWriters: Int? = 0,
+    val totalUsers: Int? = 0,
+    val activeMemberships: Int? = 0,
+    val regularUsers: Int? = 0,
+    val recentTransactions: List<TransactionDto>? = emptyList()
 )
 
 data class TransactionDto(
@@ -164,7 +182,14 @@ data class AdminBookDto(
     val writers: List<IdNameDto>
 )
 
-data class IdNameDto(val id: Int, val name: String)
+
+
+data class IdNameDto(
+    @SerializedName(value = "id", alternate = ["writer_id", "category_id", "keyword_id"])
+    val id: Int,
+
+    val name: String
+)
 
 data class BookFormDataResponse(val status: String, val data: BookFormData)
 data class BookFormData(val categories: List<IdNameDto>, val writers: List<IdNameDto>)

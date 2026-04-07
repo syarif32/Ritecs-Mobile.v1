@@ -47,6 +47,10 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
@@ -69,10 +73,13 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
     var newWriterName by remember { mutableStateOf("") }
     var isAddingWriter by remember { mutableStateOf(false) }
 
+    // --- STATE UNTUK DATE PICKER ---
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
     // Form States
     var formTitle by remember { mutableStateOf("") }
     var formSynopsis by remember { mutableStateOf("") }
-    var formPublisher by remember { mutableStateOf("") }
     var formIsbn by remember { mutableStateOf("") }
     var formDate by remember { mutableStateOf("") }
     var formEbookPath by remember { mutableStateOf("") }
@@ -126,7 +133,7 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    selectedBook = null; formTitle = ""; formSynopsis = ""; formPublisher = ""; formIsbn = ""; formDate = ""
+                    selectedBook = null; formTitle = ""; formSynopsis = ""; formIsbn = ""; formDate = ""
                     formEbookPath = ""; formPrintPrice = ""; formEbookPrice = ""; formPages = ""; formWidth = ""; formLength = ""; formThickness = ""
                     selectedCategories = emptySet(); selectedWriters = emptySet(); coverUri = null
                     showFormDialog = true
@@ -150,7 +157,7 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
                         book = book,
                         onEdit = {
                             selectedBook = book
-                            formTitle = book.title; formSynopsis = book.synopsis ?: ""; formPublisher = book.publisher ?: ""
+                            formTitle = book.title; formSynopsis = book.synopsis ?: ""
                             formIsbn = book.isbn ?: ""; formDate = book.publish_date ?: ""; formEbookPath = book.ebook_path ?: ""
                             formPrintPrice = book.print_price?.toString() ?: ""; formEbookPrice = book.ebook_price?.toString() ?: ""
                             formPages = book.pages?.toString() ?: ""; formWidth = book.width?.toString() ?: ""
@@ -191,9 +198,7 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
                                         val res = RetrofitClient.authApi.addWriterAjax("Bearer $token", newWriterName)
                                         if (res.isSuccessful && res.body() != null) {
                                             val newWriter = res.body()!!
-                                            // Tambahkan ke list lokal
                                             availableWriters = availableWriters + newWriter
-                                            // Otomatis pilih
                                             selectedWriters = selectedWriters + newWriter.id
 
                                             Toast.makeText(context, "Penulis ditambahkan!", Toast.LENGTH_SHORT).show()
@@ -218,6 +223,28 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
         // DIALOG FORM TAMBAH / EDIT BUKU
         // ==========================================
         if (showFormDialog) {
+
+            // 💡 TAMPILKAN DATE PICKER DI SINI JIKA DIAKTIFKAN
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDatePicker = false
+                            datePickerState.selectedDateMillis?.let { millis ->
+                                val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                                formDate = formatter.format(Date(millis))
+                            }
+                        }) { Text("Pilih", color = RitecsBlue, fontWeight = FontWeight.Bold) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) { Text("Batal", color = Color.Gray) }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
             AlertDialog(
                 onDismissRequest = { if(!isSubmitting) showFormDialog = false },
                 properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -248,41 +275,49 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(value = formIsbn, onValueChange = { formIsbn = it }, label = { Text("ISBN") }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp))
-                            OutlinedTextField(value = formDate, onValueChange = { formDate = it }, label = { Text("Tgl Terbit") }, modifier = Modifier.weight(1f), shape = RoundedCornerShape(8.dp), placeholder = { Text("YYYY-MM-DD")})
+
+                            // 💡 KOTAK TANGGAL YANG BISA DIKLIK MUNCUL KALENDER
+                            Box(modifier = Modifier.weight(1f).clickable { showDatePicker = true }) {
+                                OutlinedTextField(
+                                    value = formDate,
+                                    onValueChange = {},
+                                    label = { Text("Tgl Terbit") },
+                                    shape = RoundedCornerShape(8.dp),
+                                    placeholder = { Text("YYYY-MM-DD") },
+                                    readOnly = true, // Supaya keyboard tidak muncul
+                                    enabled = false, // Supaya bisa di-klik transparan
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        disabledTextColor = Color.Black,
+                                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            }
                         }
 
                         Spacer(Modifier.height(16.dp))
                         Text("Penulis & Kategori", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = RitecsBlue)
                         Spacer(Modifier.height(8.dp))
 
-                        // 💡 SOLUSI BUG + FITUR ADD WRITER
                         Select2Dropdown(
                             label = "Cari & Pilih Penulis*",
                             availableItems = availableWriters,
                             selectedIds = selectedWriters,
-                            onItemSelected = { id ->
-                                selectedWriters = selectedWriters + id
-                                if (formPublisher.isBlank()) {
-                                    formPublisher = availableWriters.find { it.id == id }?.name ?: ""
-                                }
-                            },
+                            onItemSelected = { id -> selectedWriters = selectedWriters + id },
                             onItemRemoved = { id -> selectedWriters = selectedWriters - id },
                             onAddNew = { showAddWriterDialog = true } // Tombol + Writer
                         )
 
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedTextField(value = formPublisher, onValueChange = { formPublisher = it }, label = { Text("Penerbit") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(8.dp))
-
                         Spacer(Modifier.height(16.dp))
 
-                        // 💡 KATEGORI
                         Select2Dropdown(
                             label = "Cari & Pilih Kategori*",
                             availableItems = availableCategories,
                             selectedIds = selectedCategories,
                             onItemSelected = { id -> selectedCategories = selectedCategories + id },
                             onItemRemoved = { id -> selectedCategories = selectedCategories - id },
-                            onAddNew = null // Kategori tidak ada tombol tambah
+                            onAddNew = null
                         )
 
                         Spacer(Modifier.height(16.dp))
@@ -326,10 +361,11 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
                                         }
                                     }
 
+                                    // 💡 KOTAK PENERBIT DIHAPUS -> DIGANTI "".toRb() AGAR API TETAP AMAN
                                     val res = if (selectedBook == null) {
-                                        RetrofitClient.authApi.storeAdminBook("Bearer $token", formTitle.toRb(), formSynopsis.toRb(), formPublisher.toRb(), formIsbn.toRb(), formDate.toRb(), formEbookPath.toRb(), formPages.toRb(), formWidth.toRb(), formLength.toRb(), formThickness.toRb(), formPrintPrice.toRb(), formEbookPrice.toRb(), catParts, writParts, coverPart)
+                                        RetrofitClient.authApi.storeAdminBook("Bearer $token", formTitle.toRb(), formSynopsis.toRb(), "".toRb(), formIsbn.toRb(), formDate.toRb(), formEbookPath.toRb(), formPages.toRb(), formWidth.toRb(), formLength.toRb(), formThickness.toRb(), formPrintPrice.toRb(), formEbookPrice.toRb(), catParts, writParts, coverPart)
                                     } else {
-                                        RetrofitClient.authApi.updateAdminBook("Bearer $token", selectedBook!!.book_id, formTitle.toRb(), formSynopsis.toRb(), formPublisher.toRb(), formIsbn.toRb(), formDate.toRb(), formEbookPath.toRb(), formPages.toRb(), formWidth.toRb(), formLength.toRb(), formThickness.toRb(), formPrintPrice.toRb(), formEbookPrice.toRb(), catParts, writParts, coverPart)
+                                        RetrofitClient.authApi.updateAdminBook("Bearer $token", selectedBook!!.book_id, formTitle.toRb(), formSynopsis.toRb(), "".toRb(), formIsbn.toRb(), formDate.toRb(), formEbookPath.toRb(), formPages.toRb(), formWidth.toRb(), formLength.toRb(), formThickness.toRb(), formPrintPrice.toRb(), formEbookPrice.toRb(), catParts, writParts, coverPart)
                                     }
 
                                     if (res.isSuccessful) { Toast.makeText(context, "Data berhasil disimpan!", Toast.LENGTH_SHORT).show(); showFormDialog = false; loadBooksAndForm() }
@@ -349,9 +385,9 @@ fun AdminManageBooksScreen(onNavigateBack: () -> Unit) {
 }
 
 // ==========================================
-// 💡 SOLUSI BUG: DROPDOWN SELECT2 STYLE (ANTI KLIK SALAH ID)
+// 💡 SOLUSI ULTIMATE: DROPDOWN KUSTOM (AKAL-AKALAN 100% AMAN)
 // ==========================================
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Select2Dropdown(
     label: String,
@@ -371,7 +407,6 @@ fun Select2Dropdown(
 
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        // 1. TAMPILKAN CHIP DI ATAS TEXTFIELD (PERSIS SEPERTI WEB)
         if (selectedIds.isNotEmpty()) {
             FlowRow(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -395,47 +430,26 @@ fun Select2Dropdown(
             }
         }
 
-        // 2. FORM PENCARIAN & TOMBOL TAMBAH
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
-                modifier = Modifier.weight(1f)
-            ) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it; expanded = true },
-                    label = { Text(label) },
-                    placeholder = { Text("Ketik untuk mencari...") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    singleLine = true
-                )
-
-                if (expanded && filteredItems.isNotEmpty()) {
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.heightIn(max = 200.dp)
-                    ) {
-                        filteredItems.forEach { item ->
-                            DropdownMenuItem(
-                                text = { Text(item.name) },
-                                onClick = {
-                                    onItemSelected(item.id) // 💡 PASTI BENAR KARENA DIAMBIL DARI LOOPING ITEM LANGSUNG
-                                    searchQuery = ""
-                                    expanded = false
-                                    focusManager.clearFocus()
-                                }
-                            )
-                        }
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    expanded = true
+                },
+                label = { Text(label) },
+                placeholder = { Text("Ketik untuk mencari...") },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlue),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown, contentDescription = null)
                     }
                 }
-            }
+            )
 
-            // 3. TOMBOL "+ WRITER" JIKA ADA FUNGSI onAddNew
             if (onAddNew != null) {
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -443,16 +457,46 @@ fun Select2Dropdown(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = RitecsBlue),
                     border = androidx.compose.foundation.BorderStroke(1.dp, RitecsBlue),
-                    modifier = Modifier.height(56.dp) // Samakan tinggi dengan TextField
+                    modifier = Modifier.height(56.dp)
                 ) {
                     Text("+ Tambah", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        if (expanded && filteredItems.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+                    .padding(top = 4.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(filteredItems) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onItemSelected(item.id)
+                                    searchQuery = ""
+                                    expanded = false
+                                    focusManager.clearFocus()
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Text(item.name, color = Color.Black, fontSize = 14.sp)
+                        }
+                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                    }
                 }
             }
         }
     }
 }
 
-// --- CARD BUKU ---
 @Composable
 fun AdminBookCard(book: AdminBookDto, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp), shape = RoundedCornerShape(12.dp)) {

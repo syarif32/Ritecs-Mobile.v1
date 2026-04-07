@@ -12,6 +12,7 @@ import com.example.ritecsmobile.data.remote.dto.BookResponse
 import com.example.ritecsmobile.data.remote.dto.GuidelineResponse
 import com.example.ritecsmobile.data.remote.dto.HakiResponse
 import com.example.ritecsmobile.data.remote.dto.HomeResponse
+import com.example.ritecsmobile.data.remote.dto.IdNameDto
 import com.example.ritecsmobile.data.remote.dto.JournalFormDataResponse
 import com.example.ritecsmobile.data.remote.dto.JournalServiceResponse
 import com.example.ritecsmobile.data.remote.dto.LoginRequest
@@ -392,12 +393,13 @@ suspend fun getAdminJournals(@Header("Authorization") token: String): Response<A
         @Part coverImage: MultipartBody.Part?
     ): Response<BaseResponse>
     // Tambahkan di dalam interface AuthApi
+
     @FormUrlEncoded
-    @POST("admin/writers/ajax-store")
+    @POST("admin/add-writer-ajax")
     suspend fun addWriterAjax(
         @Header("Authorization") token: String,
         @Field("name") name: String
-    ): Response<com.example.ritecsmobile.data.remote.dto.IdNameDto>
+    ): retrofit2.Response<IdNameDto>
 
     // ==========================================
     // API UNTUK RIWAYAT TRANSAKSI USER BIASA
@@ -407,4 +409,12 @@ suspend fun getAdminJournals(@Header("Authorization") token: String): Response<A
     suspend fun getUserTransactions(
         @Header("Authorization") token: String
     ): retrofit2.Response<com.example.ritecsmobile.data.remote.dto.UserTransactionResponse>
+
+    @FormUrlEncoded
+    @POST("admin/add-keyword-ajax") // Sesuaikan dengan URL di routes/api.php Bos ya
+    suspend fun addKeywordAjax(
+        @Header("Authorization") token: String,
+        @Field("name") name: String
+    ): Response<IdNameDto>
+
 }

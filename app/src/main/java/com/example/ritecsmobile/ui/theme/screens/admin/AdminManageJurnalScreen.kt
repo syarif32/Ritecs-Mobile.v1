@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager // 💡 INI IMPORT YANG KETINGGALAN
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -35,8 +36,6 @@ import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.AdminJournalDto
 import com.example.ritecsmobile.data.remote.dto.IdNameDto
-import com.example.ritecsmobile.ui.screens.books.RitecsDarkBlue
-import com.example.ritecsmobile.ui.screens.books.RitecsLightBlue
 import com.example.ritecsmobile.ui.screens.profile.uriToFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -45,7 +44,6 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
-// 💡 Menggunakan warna dari file sebelumnya
 val RitecsBlueJournal = Color(0xFF0062CD)
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +61,11 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedJournal by remember { mutableStateOf<AdminJournalDto?>(null) }
     var isSubmitting by remember { mutableStateOf(false) }
+
+    // --- STATE UNTUK ADD KEYWORD BARU ---
+    var showAddKeywordDialog by remember { mutableStateOf(false) }
+    var newKeywordName by remember { mutableStateOf("") }
+    var isAddingKeyword by remember { mutableStateOf(false) }
 
     // Form States
     var formTitle by remember { mutableStateOf("") }
@@ -93,7 +96,6 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            // 💡 HEADER DENGAN GRADASI PROFESIONAL
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,7 +137,8 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
                         onEdit = {
                             selectedJournal = journal
                             formTitle = journal.title; formUrl = journal.url_path ?: ""
-                            selectedKeywords = journal.keywords.map { it.id }.toSet(); coverUri = null
+                            selectedKeywords = journal.keywords?.map { k -> k.id }?.toSet() ?: emptySet()
+                            coverUri = null
                             showFormDialog = true
                         },
                         onDelete = { selectedJournal = journal; showDeleteDialog = true }
@@ -144,9 +147,6 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
             }
         }
 
-        // ==========================================
-        // DIALOG HAPUS JURNAL
-        // ==========================================
         if (showDeleteDialog && selectedJournal != null) {
             AlertDialog(
                 onDismissRequest = { if(!isSubmitting) showDeleteDialog = false },
@@ -170,13 +170,54 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
             )
         }
 
-        // ==========================================
-        // DIALOG FORM TAMBAH / EDIT JURNAL
-        // ==========================================
+        if (showAddKeywordDialog) {
+            AlertDialog(
+                onDismissRequest = { if (!isAddingKeyword) showAddKeywordDialog = false },
+                title = { Text("Tambah Keyword Baru", fontWeight = FontWeight.Bold) },
+                text = {
+                    OutlinedTextField(
+                        value = newKeywordName,
+                        onValueChange = { newKeywordName = it },
+                        label = { Text("Nama Keyword") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (newKeywordName.isNotBlank()) {
+                                isAddingKeyword = true
+                                scope.launch {
+                                    try {
+                                        val res = RetrofitClient.authApi.addKeywordAjax("Bearer $token", newKeywordName)
+                                        if (res.isSuccessful && res.body() != null) {
+                                            val newKeyword = res.body()!!
+                                            availableKeywords = availableKeywords + newKeyword
+                                            selectedKeywords = selectedKeywords + newKeyword.id
+
+                                            Toast.makeText(context, "Keyword ditambahkan!", Toast.LENGTH_SHORT).show()
+                                            showAddKeywordDialog = false
+                                            newKeywordName = ""
+                                        } else {
+                                            Toast.makeText(context, "Gagal menambah keyword", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Error koneksi", Toast.LENGTH_SHORT).show()
+                                    } finally { isAddingKeyword = false }
+                                }
+                            }
+                        }, colors = ButtonDefaults.buttonColors(containerColor = RitecsBlueJournal)
+                    ) { if (isAddingKeyword) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp)) else Text("Simpan") }
+                },
+                dismissButton = { TextButton(onClick = { showAddKeywordDialog = false }) { Text("Batal") } }
+            )
+        }
+
         if (showFormDialog) {
             AlertDialog(
                 onDismissRequest = { if(!isSubmitting) showFormDialog = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false), // 💡 Form lebih lebar
+                properties = DialogProperties(usePlatformDefaultWidth = false),
                 modifier = Modifier.fillMaxWidth(0.95f).padding(vertical = 24.dp),
                 shape = RoundedCornerShape(16.dp),
                 title = {
@@ -185,7 +226,6 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
                 text = {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
-                        // AREA COVER IMAGE
                         Box(
                             modifier = Modifier.fillMaxWidth().height(160.dp).clip(RoundedCornerShape(12.dp)).background(Color(0xFFE2E8F0)).clickable {
                                 imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
@@ -216,14 +256,14 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
                         Text("Kata Kunci (Keywords)", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = RitecsBlueJournal)
                         Spacer(Modifier.height(8.dp))
 
-                        // 💡 PERUBAHAN: Memanggil Select2Dropdown dari file Buku!
-                        Select2Dropdown(
+                        // 💡 MENGGUNAKAN FUNGSI YANG SUDAH DI-RENAME MENJADI Select2KeywordDropdown
+                        Select2KeywordDropdown(
                             label = "Cari & Pilih Keywords*",
                             availableItems = availableKeywords,
                             selectedIds = selectedKeywords,
-                            onItemSelected = { id -> selectedKeywords = selectedKeywords + id },
-                            onItemRemoved = { id -> selectedKeywords = selectedKeywords - id },
-                            onAddNew = null // 💡 Dibiarkan null karena kita tidak buat tombol nambah keyword baru
+                            onItemSelected = { id: Int -> selectedKeywords = selectedKeywords + id }, // 💡 DIPERTEGAS TIPENYA
+                            onItemRemoved = { id: Int -> selectedKeywords = selectedKeywords - id }, // 💡 DIPERTEGAS TIPENYA
+                            onAddNew = { showAddKeywordDialog = true }
                         )
                     }
                 },
@@ -278,7 +318,118 @@ fun AdminManageJournalsScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-// --- CARD JURNAL ELEGAN ---
+// ==========================================
+// 💡 NAMA DIGANTI JADI Select2KeywordDropdown BIAR NGGAK BERANTEM SAMA BUKU
+// ==========================================
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Select2KeywordDropdown(
+    label: String,
+    availableItems: List<IdNameDto>,
+    selectedIds: Set<Int>,
+    onItemSelected: (Int) -> Unit,
+    onItemRemoved: (Int) -> Unit,
+    onAddNew: (() -> Unit)? = null
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current // 💡 SEKARANG ERROR INI SUDAH SEMBUH
+
+    val filteredItems = availableItems.filter {
+        it.id !in selectedIds && it.name.contains(searchQuery, ignoreCase = true)
+    }.take(30)
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (selectedIds.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                selectedIds.forEach { id ->
+                    val item = availableItems.find { it.id == id }
+                    if (item != null) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp), color = RitecsBlueJournal.copy(alpha = 0.1f), border = androidx.compose.foundation.BorderStroke(1.dp, RitecsBlueJournal.copy(alpha = 0.3f))
+                        ) {
+                            Row(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Text(item.name, fontSize = 12.sp, color = RitecsBlueJournal)
+                                Spacer(Modifier.width(6.dp))
+                                Icon(Icons.Default.Close, contentDescription = "Hapus", modifier = Modifier.size(14.dp).clickable { onItemRemoved(id) }, tint = RitecsBlueJournal)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    expanded = true
+                },
+                label = { Text(label) },
+                placeholder = { Text("Ketik untuk mencari...") },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = RitecsBlueJournal),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = { expanded = !expanded }) {
+                        Icon(if (expanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown, contentDescription = null)
+                    }
+                }
+            )
+
+            if (onAddNew != null) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(
+                    onClick = onAddNew,
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = RitecsBlueJournal),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RitecsBlueJournal),
+                    modifier = Modifier.height(56.dp)
+                ) {
+                    Text("+ Tambah", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        if (expanded && filteredItems.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+                    .padding(top = 4.dp),
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(filteredItems) { item ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onItemSelected(item.id)
+                                    searchQuery = ""
+                                    expanded = false
+                                    focusManager.clearFocus()
+                                }
+                                .padding(16.dp)
+                        ) {
+                            Text(item.name, color = Color.Black, fontSize = 14.sp)
+                        }
+                        HorizontalDivider(color = Color.LightGray.copy(alpha = 0.3f))
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun AdminJournalCard(journal: AdminJournalDto, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(
@@ -302,7 +453,7 @@ fun AdminJournalCard(journal: AdminJournalDto, onEdit: () -> Unit, onDelete: () 
                     Text("🔗 Tautan Tersedia", color = Color(0xFF27AE60), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(journal.keywords.joinToString { it.name }, color = Color.Gray, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(journal.keywords?.joinToString { it.name } ?: "", color = Color.Gray, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Column {
                 IconButton(onClick = onEdit) {

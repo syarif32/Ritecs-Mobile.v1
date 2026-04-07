@@ -49,7 +49,6 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // 💡 STATE UNTUK POP-UP AKTIVASI PENDING
     var showPendingDialog by remember { mutableStateOf(false) }
 
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -107,7 +106,6 @@ fun LoginScreen(
                             modifier = Modifier.padding(bottom = 24.dp)
                         )
 
-                        // FIELD EMAIL
                         OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
@@ -128,7 +126,6 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // FIELD PASSWORD
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -156,7 +153,6 @@ fun LoginScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 💡 TOMBOL LOGIN
                         Button(
                             onClick = {
                                 if (email.isNotEmpty() && password.isNotEmpty()) {
@@ -177,30 +173,21 @@ fun LoginScreen(
                                                 val errorMessage = jsonError?.optString("message", "Login Gagal") ?: "Login Gagal"
                                                 val code = response.code()
 
-                                                // ====================================================
-                                                // 💡 LOGIKA REDIRECT & UX YANG DIPERBAIKI
-                                                // ====================================================
-
                                                 if (code == 401 || errorMessage.contains("kredensial", ignoreCase = true)) {
-                                                    // 1. SALAH PASSWORD / EMAIL -> UX DIPERBAIKI, TIDAK DILEMPAR KE REGISTER
                                                     Toast.makeText(context, "Email atau Password tidak sesuai.", Toast.LENGTH_LONG).show()
                                                 }
                                                 else if (errorMessage.contains("diproses", ignoreCase = true) || errorMessage.contains("admin", ignoreCase = true)) {
-                                                    // 2. MINTA AKTIVASI MANUAL -> MUNCULKAN POP-UP
                                                     showPendingDialog = true
                                                 }
                                                 else if (code == 403 || errorMessage.contains("diverifikasi", ignoreCase = true)) {
-                                                    // 3. BELUM VERIFIKASI OTP -> KE HALAMAN OTP
                                                     Toast.makeText(context, "Akun belum aktif, silakan verifikasi OTP.", Toast.LENGTH_LONG).show()
                                                     onNavigateToOtp(email)
                                                 }
                                                 else if (code == 404 || errorMessage.contains("tidak ditemukan", ignoreCase = true)) {
-                                                    // 4. AKUN TIDAK ADA -> LEMPAR KE REGISTER
                                                     Toast.makeText(context, "Akun tidak ditemukan. Silakan mendaftar.", Toast.LENGTH_LONG).show()
                                                     onNavigateToRegister()
                                                 }
                                                 else {
-                                                    // 5. ERROR LAINNYA
                                                     Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                                                 }
                                             }
@@ -234,7 +221,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // PEMISAH
                 Row(modifier = Modifier.fillMaxWidth(0.9f), verticalAlignment = Alignment.CenterVertically) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
                     Text(" ATAU ", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 8.dp))
@@ -245,7 +231,7 @@ fun LoginScreen(
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
                 var isGoogleLoading by remember { mutableStateOf(false) }
 
-                // 💡 TOMBOL GOOGLE LOGIN
+
                 OutlinedButton(
                     onClick = {
                         coroutineScope.launch {
@@ -280,7 +266,7 @@ fun LoginScreen(
                                     val lastName = nameParts.getOrNull(1)
                                     val profilePic = googleIdTokenCredential.profilePictureUri?.toString()
 
-                                    val apiRequest = com.example.ritecsmobile.data.remote.dto.GoogleLoginRequest(
+                                    val requestBody = com.example.ritecsmobile.data.remote.dto.GoogleLoginRequest(
                                         email = googleEmail,
                                         google_id = googleId,
                                         first_name = firstName,
@@ -288,7 +274,8 @@ fun LoginScreen(
                                         img_path = profilePic
                                     )
 
-                                    val response = RetrofitClient.authApi.googleLogin(apiRequest)
+                                    val response = RetrofitClient.authApi.googleLogin(requestBody)
+
                                     if (response.isSuccessful) {
                                         val token = response.body()?.data?.token ?: ""
                                         val role = response.body()?.data?.role ?: "user"
@@ -298,8 +285,9 @@ fun LoginScreen(
 
                                         onLoginSuccess(role)
                                     } else {
-                                        Toast.makeText(context, "Akun Google belum terdaftar. Silakan registrasi.", Toast.LENGTH_LONG).show()
-                                        onNavigateToRegister()
+                                        val errorCode = response.code()
+                                        val errorBody = response.errorBody()?.string()
+                                        Toast.makeText(context, "DITOLAK SERVER! Kode: $errorCode | Pesan: $errorBody", Toast.LENGTH_LONG).show()
                                     }
 
                                 } else {
@@ -307,11 +295,9 @@ fun LoginScreen(
                                 }
 
                             } catch (e: androidx.credentials.exceptions.GetCredentialException) {
-                                android.util.Log.e("RITECS_LOG_GOOGLE", "Error Credential: ${e.message}")
-                                Toast.makeText(context, "Akun tidak ditemukan. Silakan daftar terlebih dahulu.", Toast.LENGTH_LONG).show()
-                                onNavigateToRegister()
+                                Toast.makeText(context, "Login Google dibatalkan.", Toast.LENGTH_LONG).show()
                             } catch (e: Exception) {
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "KONEKSI CRASH: ${e.message}", Toast.LENGTH_LONG).show()
                             } finally {
                                 isGoogleLoading = false
                             }
@@ -319,7 +305,10 @@ fun LoginScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onBackground, containerColor = MaterialTheme.colorScheme.surface),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onBackground,
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     enabled = !isGoogleLoading
                 ) {
@@ -333,7 +322,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // LINK REGISTER
                 Row(modifier = Modifier.padding(bottom = 32.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("Belum punya akun? ", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Text(
@@ -347,6 +335,7 @@ fun LoginScreen(
             }
         }
     }
+
     if (showPendingDialog) {
         AlertDialog(
             onDismissRequest = { showPendingDialog = false },

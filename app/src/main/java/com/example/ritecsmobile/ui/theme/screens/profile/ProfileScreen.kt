@@ -256,6 +256,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
+
             // --- GRUP 1: AKUN & TRANSAKSI ---
             if (isLoggedIn) {
                 Text("Akun & Transaksi", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))

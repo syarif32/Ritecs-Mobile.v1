@@ -25,11 +25,11 @@ import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.AdminDashboardData
 import com.example.ritecsmobile.ui.screens.books.RitecsDarkBlue
+import kotlinx.coroutines.CancellationException // 💡 IMPORT PENTING UNTUK MEMBASMI BUG
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
-// 💡 Warna Tema Admin
 val AdminDark = Color(0xFF0F2027)
 val RitecsBlue = Color(0xFF0062CD)
 val RitecsLightBlue = Color(0xFF2E86EB)
@@ -45,14 +45,11 @@ fun AdminDashboardScreen(
     val authPreferences = remember { AuthPreferences(context) }
     val token by authPreferences.authToken.collectAsState(initial = "")
 
-    // 💡 State untuk Sidebar (Drawer)
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    // 💡 State untuk Data Analitik
     var dashboardData by remember { mutableStateOf<AdminDashboardData?>(null) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Fetch Data Analitik saat layar dibuka
     LaunchedEffect(token) {
         if (!token.isNullOrEmpty()) {
             isLoading = true
@@ -60,16 +57,20 @@ fun AdminDashboardScreen(
                 val response = RetrofitClient.authApi.getAdminDashboardStats("Bearer $token")
                 if (response.isSuccessful) {
                     dashboardData = response.body()?.data
+                } else {
+                    Toast.makeText(context, "API Ditolak: Kode ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: CancellationException) {
+                // 💡 SOLUSI BUG: Biarkan coroutine batal dengan tenang tanpa memunculkan Toast Error!
+                throw e
             } catch (e: Exception) {
-                Toast.makeText(context, "Gagal memuat analitik", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "CRASH: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 isLoading = false
             }
         }
     }
 
-    // 💡 DAFTAR MENU SIDEBAR (Tanpa Awarding)
     val menuItems = listOf(
         DrawerMenuItem("Beranda Admin", Icons.Default.Dashboard, "admin_dashboard"),
         DrawerMenuItem("Daftar Pengguna", Icons.Default.People, "admin_manage_users"),
@@ -78,22 +79,16 @@ fun AdminDashboardScreen(
         DrawerMenuItem("Approval Member", Icons.Default.CardMembership, "admin_membership_transactions"),
         DrawerMenuItem("Kelola Buku", Icons.Default.MenuBook, "admin_manage_books"),
         DrawerMenuItem("Kelola Jurnal", Icons.Default.Article, "admin_manage_journals"),
-//        DrawerMenuItem("Guidelines", Icons.Default.Description, "admin_manage_guidelines"),
-//        DrawerMenuItem("Layanan HAKI", Icons.Default.Gavel, "admin_manage_haki")
     )
 
-    // ==========================================
-    // SIDEBAR (DRAWER) WRAPPER
-    // ==========================================
     ModalNavigationDrawer(
         drawerState = drawerState,
-        gesturesEnabled = true, // Bisa di-swipe dari kiri
+        gesturesEnabled = true,
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = Color.White,
                 modifier = Modifier.width(280.dp)
             ) {
-                // Header Sidebar
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -111,7 +106,6 @@ fun AdminDashboardScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // List Menu Sidebar
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     menuItems.forEach { item ->
                         NavigationDrawerItem(
@@ -119,6 +113,7 @@ fun AdminDashboardScreen(
                             label = { Text(item.title, fontWeight = if (item.route == "admin_dashboard") FontWeight.Bold else FontWeight.Medium) },
                             selected = item.route == "admin_dashboard",
                             onClick = {
+                                // 💡 UX LEBIH MULUS: Langsung pindah tanpa harus nunggu laci selesai animasi
                                 scope.launch { drawerState.close() }
                                 if (item.route != "admin_dashboard") onNavigate(item.route)
                             },
@@ -146,9 +141,6 @@ fun AdminDashboardScreen(
             }
         }
     ) {
-        // ==========================================
-        // KONTEN UTAMA (DASHBOARD)
-        // ==========================================
         Scaffold(
             topBar = {
                 Box(
@@ -159,7 +151,6 @@ fun AdminDashboardScreen(
                     TopAppBar(
                         title = { Text("Dashboard", fontWeight = FontWeight.ExtraBold, color = Color.White) },
                         navigationIcon = {
-                            // 💡 TOMBOL HAMBURGER UNTUK BUKA SIDEBAR
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.White)
                             }
@@ -176,7 +167,6 @@ fun AdminDashboardScreen(
                     .padding(paddingValues)
                     .verticalScroll(rememberScrollState())
             ) {
-                // --- HEADER WELCOME & SWITCH MODE (Tetap Dipertahankan) ---
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -200,7 +190,6 @@ fun AdminDashboardScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // 💡 TOMBOL PINDAH KE MODE USER
                         Button(
                             onClick = { onNavigate("home_tab") },
                             modifier = Modifier.fillMaxWidth().height(48.dp),
@@ -217,18 +206,17 @@ fun AdminDashboardScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // --- DATA ANALITIK DARI API ---
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = RitecsBlue)
                     }
                 } else if (dashboardData != null) {
                     val data = dashboardData!!
-                    val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(data.totalRevenue)
+
+                    val formatRp = NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(data.totalRevenue ?: 0L)
 
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
-                        // 1. KARTU PENDAPATAN
                         Card(
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                             colors = CardDefaults.cardColors(containerColor = RitecsDarkBlue),
@@ -248,23 +236,22 @@ fun AdminDashboardScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.TrendingUp, null, tint = Color(0xFF2ECC71), modifier = Modifier.size(16.dp))
                                         Spacer(Modifier.width(4.dp))
-                                        Text("+${data.revenueGrowth}% dari bulan lalu", color = Color(0xFF2ECC71), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text("+${data.revenueGrowth ?: 0.0}% dari bulan lalu", color = Color(0xFF2ECC71), fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
                         }
 
-                        // 2. GRID STATISTIK KONTEN & USER
                         Text("Ringkasan Sistem", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.DarkGray, modifier = Modifier.padding(bottom = 12.dp))
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            StatBox(modifier = Modifier.weight(1f), title = "Total Pengguna", value = data.totalUsers.toString(), icon = Icons.Default.Group, iconColor = Color(0xFF3498DB))
-                            StatBox(modifier = Modifier.weight(1f), title = "Member Aktif", value = data.activeMemberships.toString(), icon = Icons.Default.WorkspacePremium, iconColor = Color(0xFFF1C40F))
+                            StatBox(modifier = Modifier.weight(1f), title = "Total Pengguna", value = (data.totalUsers ?: 0).toString(), icon = Icons.Default.Group, iconColor = Color(0xFF3498DB))
+                            StatBox(modifier = Modifier.weight(1f), title = "Member Aktif", value = (data.activeMemberships ?: 0).toString(), icon = Icons.Default.WorkspacePremium, iconColor = Color(0xFFF1C40F))
                         }
                         Spacer(Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            StatBox(modifier = Modifier.weight(1f), title = "Buku Rilis", value = data.totalBooks.toString(), icon = Icons.Default.LibraryBooks, iconColor = Color(0xFF2ECC71))
-                            StatBox(modifier = Modifier.weight(1f), title = "Jurnal Rilis", value = data.totalJournals.toString(), icon = Icons.Default.Article, iconColor = Color(0xFFE67E22))
+                            StatBox(modifier = Modifier.weight(1f), title = "Buku Rilis", value = (data.totalBooks ?: 0).toString(), icon = Icons.Default.LibraryBooks, iconColor = Color(0xFF2ECC71))
+                            StatBox(modifier = Modifier.weight(1f), title = "Jurnal Rilis", value = (data.totalJournals ?: 0).toString(), icon = Icons.Default.Article, iconColor = Color(0xFFE67E22))
                         }
 
                         Spacer(Modifier.height(32.dp))
@@ -279,7 +266,6 @@ fun AdminDashboardScreen(
     }
 }
 
-// 💡 KOMPONEN KOTAK STATISTIK KECIL
 @Composable
 fun StatBox(modifier: Modifier = Modifier, title: String, value: String, icon: ImageVector, iconColor: Color) {
     Card(
@@ -303,5 +289,4 @@ fun StatBox(modifier: Modifier = Modifier, title: String, value: String, icon: I
     }
 }
 
-// Data Class untuk Menu Sidebar
 data class DrawerMenuItem(val title: String, val icon: ImageVector, val route: String)
