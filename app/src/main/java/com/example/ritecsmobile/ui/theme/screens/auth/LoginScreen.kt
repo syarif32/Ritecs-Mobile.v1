@@ -31,9 +31,10 @@ import com.example.ritecsmobile.R
 import com.example.ritecsmobile.data.local.AuthPreferences
 import com.example.ritecsmobile.data.remote.RetrofitClient
 import com.example.ritecsmobile.data.remote.dto.LoginRequest
+import com.example.ritecsmobile.ui.screens.books.RitecsDarkBlue
+import com.example.ritecsmobile.ui.screens.books.RitecsLightBlue
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-
 
 @Composable
 fun LoginScreen(
@@ -50,6 +51,9 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
 
     var showPendingDialog by remember { mutableStateOf(false) }
+
+    // 💡 STATE BARU UNTUK POP-UP LUPA PASSWORD
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
     val primaryColor = MaterialTheme.colorScheme.primary
 
@@ -151,6 +155,21 @@ fun LoginScreen(
                             )
                         )
 
+                        // 💡 KLIK TEKS SEKARANG MEMUNCULKAN DIALOG DULU
+                        Text(
+                            text = "Lupa Password?",
+                            color = primaryColor,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp)
+                                .clickable {
+                                    showForgotPasswordDialog = true // Tampilkan pop up
+                                },
+                            textAlign = TextAlign.End
+                        )
+
                         Spacer(modifier = Modifier.height(24.dp))
 
                         Button(
@@ -230,7 +249,6 @@ fun LoginScreen(
 
                 val credentialManager = androidx.credentials.CredentialManager.create(context)
                 var isGoogleLoading by remember { mutableStateOf(false) }
-
 
                 OutlinedButton(
                     onClick = {
@@ -336,6 +354,7 @@ fun LoginScreen(
         }
     }
 
+    // --- DIALOG PENDING AKTIVASI ---
     if (showPendingDialog) {
         AlertDialog(
             onDismissRequest = { showPendingDialog = false },
@@ -351,10 +370,52 @@ fun LoginScreen(
             confirmButton = {
                 Button(
                     onClick = { showPendingDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = RitecsBlue),
+                    colors = ButtonDefaults.buttonColors(containerColor = RitecsDarkBlue),
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text("Saya Mengerti", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    // ==========================================
+    // 💡 POP-UP LUPA PASSWORD BARU
+    // ==========================================
+    if (showForgotPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = { showForgotPasswordDialog = false },
+            title = { Text("Lupa Password?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
+            text = {
+                Text(
+                    "Untuk menjaga keamanan akun Anda, proses pemulihan password dilakukan melalui website resmi Ritecs.\n\nKlik tombol di bawah untuk menuju halaman reset password.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 20.sp
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showForgotPasswordDialog = false // Tutup pop-up
+                        // Arahkan ke web
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("https://ritecs.org/forgot-password")
+                        )
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = RitecsDarkBlue),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Buka Website", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForgotPasswordDialog = false }) {
+                    Text("Batal", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             shape = RoundedCornerShape(16.dp),

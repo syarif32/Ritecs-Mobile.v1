@@ -2,6 +2,10 @@ package com.example.ritecsmobile.ui.theme.screens.home
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,11 +26,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -47,7 +61,6 @@ val BackgroundSoft = Color(0xFFF8FAFC)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
-// 💡 PERBAIKAN 1: Tambah parameter onNavigateToBookDetail biar bisa langsung lompat ke detail buku
 fun BerandaScreen(
     onNavigate: (String) -> Unit,
     onNavigateToBookDetail: (BookDto) -> Unit = {}
@@ -60,6 +73,19 @@ fun BerandaScreen(
     var latestBooks by remember { mutableStateOf<List<BookDto>>(emptyList()) }
     var latestJournals by remember { mutableStateOf<List<JournalDto>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+
+    // =========================================================================
+    // 💡 STATE KOORDINAT BARU (ANTI-BUG SAMSUNG)
+    // =========================================================================
+    var rootCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var searchCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var bukuCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var jurnalCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var profileCoords by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    val sharedPreferences = context.getSharedPreferences("RitecsTourPrefs", android.content.Context.MODE_PRIVATE)
+    var isTourActive by remember { mutableStateOf(sharedPreferences.getBoolean("has_seen_home_tour", false).not()) }
+    var currentTourStep by remember { mutableStateOf(1) } // 1=Search, 2=Buku, 3=Jurnal, 4=Profile
 
     // FETCH API (Buku & Jurnal)
     LaunchedEffect(Unit) {
@@ -76,7 +102,6 @@ fun BerandaScreen(
         }
     }
 
-    // 💡 LOGIKA FILTER SEARCH: Mencari judul buku atau jurnal yang cocok dengan ketikan user (case-insensitive)
     val filteredBooks = if (searchQuery.isEmpty()) {
         latestBooks
     } else {
@@ -96,15 +121,19 @@ fun BerandaScreen(
     )
     val pagerState = rememberPagerState(pageCount = { promoBanners.size })
 
-    // Logika transparansi Top Bar saat di-scroll
     val topBarAlpha by remember {
         derivedStateOf {
             (scrollState.value / 300f).coerceIn(0f, 1f)
         }
     }
 
-    // 💡 Latar Belakang Layar Otomatis
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+    // 💡 PASANG SENSOR INDUK DI BOX PALING LUAR
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .onGloballyPositioned { rootCoords = it } // Menangkap koordinat absolut layar ini
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,7 +166,6 @@ fun BerandaScreen(
                 ) {
                     repeat(promoBanners.size) { iteration ->
                         val isSelected = pagerState.currentPage == iteration
-                        // Titik banner biarkan putih agar terlihat di atas gambar
                         val color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
                         val width = if (isSelected) 20.dp else 8.dp
                         Box(
@@ -154,17 +182,26 @@ fun BerandaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- MENU LAYANAN
+            // --- MENU LAYANAN ---
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.surface, // 💡 Warna Card Otomatis
+                color = MaterialTheme.colorScheme.surface,
                 shadowElevation = 3.dp
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        MenuIconItem(Icons.Default.Article, "Jurnal", Color(0xFF3498DB)) { onNavigate("jurnal_tab") }
-                        MenuIconItem(Icons.Default.MenuBook, "Buku", Color(0xFFE67E22)) { onNavigate("buku_tab") }
+
+                        // 💡 TARGET 3: MENU JURNAL (Pasang Sensor)
+                        Box(modifier = Modifier.onGloballyPositioned { jurnalCoords = it }) {
+                            MenuIconItem(Icons.Default.Article, "Jurnal", Color(0xFF3498DB)) { onNavigate("jurnal_tab") }
+                        }
+
+                        // 💡 TARGET 2: MENU BUKU (Pasang Sensor)
+                        Box(modifier = Modifier.onGloballyPositioned { bukuCoords = it }) {
+                            MenuIconItem(Icons.Default.MenuBook, "Buku", Color(0xFFE67E22)) { onNavigate("buku_tab") }
+                        }
+
                         MenuIconItem(Icons.Default.WorkspacePremium, "Membership", Color(0xFFF1C40F)) { onNavigate("benefit_member") }
                         MenuIconItem(Icons.Default.Gavel, "HAKI", Color(0xFF2ECC71)) { onNavigate("haki") }
                     }
@@ -179,18 +216,14 @@ fun BerandaScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- SECTION BUKU TERBARU ---
-            // 💡 Ubah judul sesuai filter pencarian
             SectionHeader(if (searchQuery.isEmpty()) "Buku Terbaru" else "Hasil Pencarian Buku", onSeeAll = { onNavigate("buku_tab") })
 
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
             } else if (filteredBooks.isEmpty()) {
-                // 💡 Menampilkan teks jika pencarian tidak ditemukan
                 Text("Buku tidak ditemukan.", modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // 💡 Menggunakan filteredBooks bukan latestBooks
                     items(filteredBooks) { book ->
                         val imagePath = book.cover_path?.trimStart('/') ?: "assets/published/books/book_default.png"
                         val imageUrl = BASE_URL_BE + imagePath
@@ -210,18 +243,14 @@ fun BerandaScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // --- SECTION JURNAL TERBARU ---
-            // 💡 Ubah judul sesuai filter pencarian
             SectionHeader(if (searchQuery.isEmpty()) "Jurnal Rilis Terbaru" else "Hasil Pencarian Jurnal", onSeeAll = { onNavigate("jurnal_tab") })
 
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).padding(24.dp), color = RitecsBlue)
             } else if (filteredJournals.isEmpty()) {
-                // 💡 Menampilkan teks jika pencarian tidak ditemukan
                 Text("Jurnal tidak ditemukan.", modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 LazyRow(contentPadding = PaddingValues(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // 💡 Menggunakan filteredJournals bukan latestJournals
                     items(filteredJournals) { journal ->
                         val imagePath = journal.cover_path?.trimStart('/') ?: ""
                         val imageUrl = BASE_URL_BE + imagePath
@@ -244,55 +273,6 @@ fun BerandaScreen(
             Spacer(modifier = Modifier.height(100.dp))
         }
 
-        //            Box(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .statusBarsPadding()
-//                    .padding(horizontal = 20.dp),
-////                    .offset(y = (-15).dp),
-//
-//                contentAlignment = Alignment.Center
-//            ) {
-//
-//
-//                Row(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-//                ) {
-//                    // Search Bar White
-//                    Surface(
-//                        shape = RoundedCornerShape(24.dp),
-//                        color = Color.White,
-//                        modifier = Modifier.weight(1f).height(50.dp),
-//                        shadowElevation = 2.dp
-//                    ) {
-//                        OutlinedTextField(
-//                            value = searchQuery, onValueChange = { searchQuery = it },
-//                            placeholder = { Text("Cari buku, jurnal, dll...", color = Color.Gray, fontSize = 13.sp) },
-//                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = RitecsBlue, modifier = Modifier.size(20.dp)) },
-//                            colors = OutlinedTextFieldDefaults.colors(
-//                                focusedBorderColor = Color.Transparent,
-//                                unfocusedBorderColor = Color.Transparent,
-//                                cursorColor = RitecsBlue
-//                            ),
-//                            singleLine = true, modifier = Modifier.fillMaxSize()
-//                        )
-//                    }
-//
-//                    // Profile Icon White
-//                    Surface(
-//                        shape = CircleShape,
-//                        color = Color.White,
-//                        modifier = Modifier.size(46.dp).clickable { onNavigate("profile_tab") },
-//                        shadowElevation = 2.dp
-//                    ) {
-//                        Box(contentAlignment = Alignment.Center) {
-//                            Icon(Icons.Default.Person, contentDescription = "Akun", tint = RitecsBlue, modifier = Modifier.size(24.dp))
-//                        }
-//                    }
-//                }
-//            }
         val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
 
         Box(
@@ -316,32 +296,30 @@ fun BerandaScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
-                // Custom Search Bar Anti-Kegencet
+                // 💡 TARGET 1: SEARCH BAR (Pasang Sensor)
                 Surface(
                     shape = RoundedCornerShape(24.dp),
-                    color = MaterialTheme.colorScheme.surface, // 💡 Warna Permukaan Search Bar Otomatis
+                    color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
                         .weight(1f)
-                        .height(50.dp),
+                        .height(50.dp)
+                        .onGloballyPositioned { searchCoords = it },
                     shadowElevation = 0.dp
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 16.dp).fillMaxSize()
                     ) {
-                        // 💡 Ikon Search Otomatis Abu-abu sesuai tema
                         Icon(Icons.Default.Search, contentDescription = "Search", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.width(12.dp))
 
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                             if (searchQuery.isEmpty()) {
-                                // 💡 Placeholder Otomatis Abu-abu
                                 Text("Cari buku, jurnal, dll...", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             }
                             androidx.compose.foundation.text.BasicTextField(
                                 value = searchQuery,
                                 onValueChange = { searchQuery = it },
-                                // 💡 Warna Ketikan Teks Otomatis Hitam/Putih
                                 textStyle = androidx.compose.ui.text.TextStyle(fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface),
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth()
@@ -350,12 +328,13 @@ fun BerandaScreen(
                     }
                 }
 
-                // Profile Icon
+                // 💡 TARGET 4: PROFILE ICON (Pasang Sensor)
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
                         .size(50.dp)
+                        .onGloballyPositioned { profileCoords = it }
                         .clickable { onNavigate("profile_tab") },
                     shadowElevation = 0.dp
                 ) {
@@ -365,11 +344,182 @@ fun BerandaScreen(
                 }
             }
         }
+
+        // =========================================================================
+        // 💡 KALKULASI RECTANGLE SUPER PRESISI (DIJAMIN GAK MELESET DI SAMSUNG)
+        // =========================================================================
+        if (isTourActive) {
+            val targetRect = remember(rootCoords, searchCoords, bukuCoords, jurnalCoords, profileCoords, currentTourStep) {
+                if (rootCoords?.isAttached != true) return@remember null
+
+                val coords = when (currentTourStep) {
+                    1 -> searchCoords
+                    2 -> bukuCoords
+                    3 -> jurnalCoords
+                    4 -> profileCoords
+                    else -> null
+                }
+
+                if (coords?.isAttached == true) {
+                    try {
+                        // 💡 RUMUS AJAIB: Menghitung posisi anak absolut terhadap induk layarnya
+                        rootCoords!!.localBoundingBoxOf(coords)
+                    } catch (e: Exception) { null }
+                } else null
+            }
+
+            val title = when (currentTourStep) {
+                1 -> "Cari Lebih Cepat"
+                2 -> "Koleksi Buku"
+                3 -> "Jurnal Ilmiah"
+                4 -> "Profil & Pengaturan"
+                else -> ""
+            }
+            val desc = when (currentTourStep) {
+                1 -> "Ketik kata kunci di sini untuk mencari koleksi buku atau jurnal dengan cepat."
+                2 -> "Jelajahi berbagai koleksi buku ilmiah dan fiksi terbitan Ritecs."
+                3 -> "Akses portal jurnal Open Journal System (OJS) Ritecs dengan mudah."
+                4 -> "Kelola akun, riwayat transaksi, dan kartu member Anda di sini."
+                else -> ""
+            }
+
+            if (targetRect != null && targetRect.width > 0) {
+                SpotlightGuidedTour(
+                    targetRect = targetRect,
+                    title = title,
+                    description = desc,
+                    stepIndex = currentTourStep,
+                    totalSteps = 4,
+                    onNext = {
+                        if (currentTourStep < 4) {
+                            currentTourStep++
+                        } else {
+                            isTourActive = false
+                            sharedPreferences.edit().putBoolean("has_seen_home_tour", true).apply()
+                        }
+                    },
+                    onSkip = {
+                        isTourActive = false
+                        sharedPreferences.edit().putBoolean("has_seen_home_tour", true).apply()
+                    }
+                )
+            }
+        }
+    }
+}
+
+// =========================================================================
+// 💡 KODINGAN CUSTOM VIEW UNTUK SPOTLIGHT / COACH MARK REUSABLE
+// =========================================================================
+@Composable
+fun SpotlightGuidedTour(
+    targetRect: Rect,
+    title: String,
+    description: String,
+    stepIndex: Int,
+    totalSteps: Int,
+    onNext: () -> Unit,
+    onSkip: () -> Unit
+) {
+    key(stepIndex) {
+        var isVisible by remember { mutableStateOf(false) }
+        var tooltipHeight by remember { mutableStateOf(0f) }
+        var overlayHeight by remember { mutableStateOf(1000f) } // Ambil tinggi canvas
+
+        val density = LocalDensity.current
+
+        LaunchedEffect(Unit) { isVisible = true }
+
+        val alpha by animateFloatAsState(targetValue = if (isVisible) 1f else 0f, animationSpec = tween(250), label = "alpha")
+        val scale by animateFloatAsState(targetValue = if (isVisible) 1f else 0.95f, animationSpec = tween(300, easing = FastOutSlowInEasing), label = "scale")
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { overlayHeight = it.size.height.toFloat() } // Sensor tinggi layar overlay
+                .graphicsLayer { this.alpha = alpha }
+                .pointerInput(Unit) { /* Menahan semua sentuhan ke UI di belakangnya */ }
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize().graphicsLayer { this.alpha = 0.99f }) {
+                drawRect(Color.Black.copy(alpha = 0.75f))
+
+                val padding = 8.dp.toPx()
+                val targetWidth = targetRect.width + (padding * 2)
+                val targetHeight = targetRect.height + (padding * 2)
+
+                val scaledWidth = targetWidth * scale
+                val scaledHeight = targetHeight * scale
+
+                val offsetX = targetRect.left - padding + (targetWidth - scaledWidth) / 2
+                val offsetY = targetRect.top - padding + (targetHeight - scaledHeight) / 2
+
+                drawRoundRect(
+                    color = Color.Black,
+                    topLeft = Offset(offsetX, offsetY),
+                    size = Size(scaledWidth, scaledHeight),
+                    cornerRadius = CornerRadius(100f, 100f),
+                    blendMode = BlendMode.Clear
+                )
+            }
+
+            // Posisikan tooltip cerdas, pakai overlayHeight (bukan ScreenHeight) biar aman dari bug Samsung!
+            val showBelow = targetRect.center.y < (overlayHeight / 2)
+
+            val yOffsetDp = with(density) {
+                if (showBelow) {
+                    targetRect.bottom.toDp() + 16.dp
+                } else {
+                    (targetRect.top - tooltipHeight).toDp() - 16.dp
+                }
+            }
+
+            val tooltipAlpha = if (tooltipHeight > 0f) 1f else 0f
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .offset(y = yOffsetDp)
+                    .padding(horizontal = 24.dp)
+                    .graphicsLayer { this.alpha = tooltipAlpha }
+                    .onGloballyPositioned { tooltipHeight = it.size.height.toFloat() }
+            ) {
+                Text(
+                    text = title,
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = description,
+                    color = Color.White.copy(alpha = 0.85f),
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onSkip) {
+                        Text("Lewati Tour", color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.SemiBold)
+                    }
+                    Button(
+                        onClick = onNext,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0062CD)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(if (stepIndex == totalSteps) "Selesai" else "Selanjutnya", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
     }
 }
 
 // --- HELPER COMPOSABLES ---
-
 data class PromoBannerDrawable(val imageResId: Int, val linkUrl: String)
 
 @Composable
@@ -379,7 +529,6 @@ fun MenuIconItem(icon: ImageVector, title: String, tint: Color, onClick: () -> U
             Icon(icon, contentDescription = title, tint = tint, modifier = Modifier.size(26.dp))
         }
         Spacer(modifier = Modifier.height(8.dp))
-        // 💡 Warna Teks Menu Otomatis
         Text(title, fontSize = 11.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
 }
@@ -387,7 +536,6 @@ fun MenuIconItem(icon: ImageVector, title: String, tint: Color, onClick: () -> U
 @Composable
 fun SectionHeader(title: String, onSeeAll: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        // 💡 Warna Teks Judul Otomatis
         Text(title, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp, color = MaterialTheme.colorScheme.onSurface)
         Text("Lihat Semua", color = RitecsBlue, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onSeeAll() })
     }
@@ -400,7 +548,6 @@ fun HomeVerticalCard(title: String, subtitle: String, label: String, tagColor: C
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                // 💡 Garis & Background Gambar Otomatis (Soft dark di mode malam)
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(10.dp))
                 .clip(RoundedCornerShape(10.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -412,10 +559,8 @@ fun HomeVerticalCard(title: String, subtitle: String, label: String, tagColor: C
             Text(label, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = tagColor, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
         }
         Spacer(modifier = Modifier.height(6.dp))
-        // 💡 Subtitle Otomatis (Abu-abu Kalem)
         Text(subtitle, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(modifier = Modifier.height(2.dp))
-        // 💡 Teks Judul Otomatis (Hitam/Putih)
         Text(title, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 17.sp, modifier = Modifier.height(34.dp))
         Spacer(modifier = Modifier.height(4.dp))
         Text(priceText, fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = priceColor)

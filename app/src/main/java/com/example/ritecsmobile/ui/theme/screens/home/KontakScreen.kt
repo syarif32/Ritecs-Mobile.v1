@@ -132,11 +132,13 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // FORM SECTION
+                // FORM SECTION
+                // FORM SECTION
                 Text("Kirim Pesan Langsung", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.padding(bottom = 12.dp))
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), // 💡 Otomatis
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
@@ -148,6 +150,10 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         CustomOutlinedTextField(value = phone, onValueChange = { phone = it }, label = "No. Handphone*", icon = Icons.Default.Smartphone, keyboardType = KeyboardType.Phone)
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // 💡 INI KOLOM ALAMAT YANG KETINGGALAN TADI!
+                        CustomOutlinedTextField(value = address, onValueChange = { address = it }, label = "Alamat Domisili*", icon = Icons.Default.LocationOn)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         CustomOutlinedTextField(value = subject, onValueChange = { subject = it }, label = "Subjek Pesan*", icon = Icons.Default.Topic)
@@ -162,8 +168,8 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = ritecsBlue,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant, // 💡 Otomatis
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface, // 💡 Teks ketikan aman
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                 unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
@@ -172,26 +178,37 @@ fun KontakScreen(onNavigateBack: () -> Unit = {}) {
 
                         Button(
                             onClick = {
-                                if (name.isBlank() || email.isBlank() || message.isBlank()) {
-                                    Toast.makeText(context, "Lengkapi field wajib (*)", Toast.LENGTH_SHORT).show()
+                                // 💡 VALIDASI LOKAL DIPERKETAT (Semua wajib diisi)
+                                if (name.isBlank() || email.isBlank() || phone.isBlank() || address.isBlank() || subject.isBlank() || message.isBlank()) {
+                                    Toast.makeText(context, "Lengkapi semua field wajib (*)", Toast.LENGTH_SHORT).show()
                                     return@Button
                                 }
+
                                 isSubmitting = true
                                 coroutineScope.launch {
                                     try {
                                         val req = ContactSendRequest(name, email, phone, address, subject, message)
                                         val res = RetrofitClient.authApi.sendContactMessage(req)
-                                        Toast.makeText(context, res.message, Toast.LENGTH_LONG).show()
-                                        // Reset form
-                                        name = ""; email = ""; phone = ""; address = ""; subject = ""; message = ""
+
+                                        if (res.isSuccessful) {
+                                            val successMessage = res.body()?.message ?: "Pesan berhasil dikirim!"
+                                            Toast.makeText(context, successMessage, Toast.LENGTH_LONG).show()
+
+                                            // Reset form kalau sukses
+                                            name = ""; email = ""; phone = ""; address = ""; subject = ""; message = ""
+                                        } else {
+                                            Toast.makeText(context, "Gagal mengirim pesan. Coba lagi.", Toast.LENGTH_SHORT).show()
+                                        }
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Gagal mengirim pesan", Toast.LENGTH_SHORT).show()
-                                    } finally { isSubmitting = false }
+                                        Toast.makeText(context, "Gagal koneksi ke server", Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        isSubmitting = false
+                                    }
                                 }
                             },
                             modifier = Modifier.fillMaxWidth().height(54.dp),
                             shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = ritecsBlue), // 💡 Tetap Biru Brand
+                            colors = ButtonDefaults.buttonColors(containerColor = ritecsBlue),
                             enabled = !isSubmitting
                         ) {
                             if (isSubmitting) {

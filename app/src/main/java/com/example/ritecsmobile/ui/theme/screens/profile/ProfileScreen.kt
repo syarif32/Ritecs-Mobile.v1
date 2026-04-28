@@ -227,7 +227,7 @@ fun ProfileScreen(
                 }
             }
         }
-        
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -256,8 +256,6 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
-
-            // --- GRUP 1: AKUN & TRANSAKSI ---
             if (isLoggedIn) {
                 Text("Akun & Transaksi", fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, bottom = 8.dp))
                 Card(
@@ -267,9 +265,12 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column {
-                        MenuListItem(icon = Icons.Default.Lock, iconTint = MaterialTheme.colorScheme.onSurface, title = "Keamanan Akun", onClick = { onNavigate("profile_settings") })
+                        // 💡 PERUBAHAN: Icon jadi biru (ritecsBlue) & route diganti jadi ubah_password
+                        MenuListItem(icon = Icons.Default.Lock, iconTint = ritecsBlue, title = "Keamanan Akun", onClick = { onNavigate("ubah_password") })
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(horizontal = 16.dp))
-                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = MaterialTheme.colorScheme.onSurface, title = "Riwayat Transaksi", onClick = { onNavigate("riwayat_transaksi") })
+
+                        // 💡 PERUBAHAN: Icon jadi biru
+                        MenuListItem(icon = Icons.Default.ReceiptLong, iconTint = ritecsBlue, title = "Riwayat Transaksi", onClick = { onNavigate("riwayat_transaksi") })
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(horizontal = 16.dp))
 
                         // 💡 TOMBOL SWITCH MODE GELAP
@@ -286,7 +287,9 @@ fun ProfileScreen(
                         )
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(horizontal = 16.dp))
-                        MenuListItem(icon = Icons.Default.CardGiftcard, iconTint = MaterialTheme.colorScheme.onSurface, title = "Member Benefit", onClick = { onNavigate("benefit_member") })
+
+                        // 💡 PERUBAHAN: Icon jadi biru
+                        MenuListItem(icon = Icons.Default.CardGiftcard, iconTint = ritecsBlue, title = "Member Benefit", onClick = { onNavigate("benefit_member") })
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
@@ -369,7 +372,6 @@ fun MenuSwitchItem(icon: ImageVector, iconTint: Color, title: String, isChecked:
         }
 
         Spacer(modifier = Modifier.width(16.dp))
-        // 💡 Warna Teks Otomatis
         Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
 
         Switch(

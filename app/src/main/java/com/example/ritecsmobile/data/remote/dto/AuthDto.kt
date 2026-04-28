@@ -113,3 +113,8 @@ data class StatsDto(
     val journals: Int,
     val teams: Int
 )
+data class ChangePasswordRequest(
+    val current_password: String,
+    val new_password: String,
+    val new_password_confirmation: String
+)

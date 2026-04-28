@@ -38,6 +38,7 @@ import com.example.ritecsmobile.ui.screens.books.PetunjukPenulisScreen
 import com.example.ritecsmobile.ui.screens.journal.JurnalScreen
 import com.example.ritecsmobile.ui.screens.onboarding.OnboardingScreen
 import com.example.ritecsmobile.ui.screens.onboarding.SplashScreen
+import com.example.ritecsmobile.ui.screens.profile.ChangePasswordScreen
 import com.example.ritecsmobile.ui.theme.screens.home.BerandaScreen
 import kotlinx.coroutines.launch
 
@@ -258,7 +259,6 @@ fun MainScreen() {
                     com.example.ritecsmobile.ui.screens.home.LayananJurnalScreen()
                 }
                 composable("benefit_member") {
-                    // 💡 Sesuai permintaan Bos: Menyambungkan onSuccess ke halaman Kartu Digital!
                     com.example.ritecsmobile.ui.screens.members.MemberRegistrationScreen(
                         onNavigateBack = { bottomNavController.popBackStack() },
                         onSuccess = { bottomNavController.navigate("profile_membership") }
@@ -306,6 +306,10 @@ fun MainScreen() {
                 composable("kontak") {
                     com.example.ritecsmobile.ui.screens.home.KontakScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
+                composable("ubah_password") {
+                    // 💡 INI YANG DIGANTI (Dari navController jadi bottomNavController)
+                    ChangePasswordScreen(onNavigateBack = { bottomNavController.popBackStack() })
+                }
 
 
                 // 5. RUTE ADMIN (DASHBOARD & MANAGEMENT)
@@ -343,7 +347,6 @@ fun MainScreen() {
                 }
 
                 composable("admin_activation_requests") {
-                    // Screen Verifikasi Manual OTP
                     com.example.ritecsmobile.ui.theme.screens.admin.ActivationRequestScreen(onNavigateBack = { bottomNavController.popBackStack() })
                 }
 
@@ -394,7 +397,6 @@ fun BottomNavigationBar(navController: NavHostController) {
     val ritecsBlue = Color(0xFF0062CD)
 
     NavigationBar(
-        // 💡 Warna Background Dinamis
         containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 0.dp,
         modifier = Modifier.border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
@@ -402,14 +404,13 @@ fun BottomNavigationBar(navController: NavHostController) {
         items.forEach { item ->
             val isSelected = currentRoute == item.route
             NavigationBarItem(
-                // 💡 INI DIA TRIK GRADASI UNTUK HOVER MENU AKTIFNYA
                 icon = {
                     if (isSelected) {
                         Box(
                             modifier = Modifier
                                 .background(
                                     brush = Brush.horizontalGradient(
-                                        colors = listOf(Color(0xFF004191), ritecsBlue) // Gradasi Biru Gelap ke Biru Ritecs
+                                        colors = listOf(Color(0xFF004191), ritecsBlue)
                                     ),
                                     shape = RoundedCornerShape(16.dp)
                                 )
@@ -419,7 +420,6 @@ fun BottomNavigationBar(navController: NavHostController) {
                             Icon(imageVector = item.icon, contentDescription = item.title, tint = Color.White)
                         }
                     } else {
-                        // Kalau tidak aktif, warnanya menyesuaikan (Abu-abu Kalem)
                         Icon(imageVector = item.icon, contentDescription = item.title, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },

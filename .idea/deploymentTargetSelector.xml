@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="RitecsMobile.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-04-02T02:22:38.392837300Z">
+        <DropdownSelection timestamp="2026-04-28T16:04:21.416896800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=RRCXC00EQHY" />

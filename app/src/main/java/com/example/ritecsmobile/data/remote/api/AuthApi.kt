@@ -129,10 +129,12 @@ interface AuthApi {
     @GET("contact-info")
     suspend fun getContactInfo(): com.example.ritecsmobile.data.remote.dto.ContactInfoResponse
 
-    // Mengirim pesan kontak
+    // 💡 TAMBAHKAN HEADER & BUNGKUS DENGAN Response<BaseResponse>
+    @Headers("Accept: application/json")
     @POST("contact-send")
-    suspend fun sendContactMessage(@Body request: com.example.ritecsmobile.data.remote.dto.ContactSendRequest): com.example.ritecsmobile.data.remote.dto.SimpleResponse
-
+    suspend fun sendContactMessage(
+        @Body request: com.example.ritecsmobile.data.remote.dto.ContactSendRequest
+    ): retrofit2.Response<com.example.ritecsmobile.data.remote.dto.BaseResponse>
 
 
     @GET("membership/banks")
@@ -417,4 +419,10 @@ suspend fun getAdminJournals(@Header("Authorization") token: String): Response<A
         @Field("name") name: String
     ): Response<IdNameDto>
 
+
+    @retrofit2.http.POST("change-password")
+    suspend fun changePassword(
+        @retrofit2.http.Header("Authorization") token: String,
+        @retrofit2.http.Body request: com.example.ritecsmobile.data.remote.dto.ChangePasswordRequest
+    ): retrofit2.Response<com.example.ritecsmobile.data.remote.dto.BaseResponse>
 }
