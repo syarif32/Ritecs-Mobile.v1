@@ -259,7 +259,7 @@ fun LoginScreen(
                                     .addCredentialOption(
                                         com.google.android.libraries.identity.googleid.GetGoogleIdOption.Builder()
                                             .setFilterByAuthorizedAccounts(false)
-                                            .setServerClientId("74205596232-8shtov9l8k950qh1dapa4uvvk6os8lvj.apps.googleusercontent.com")
+                                            .setServerClientId("")
                                             .setAutoSelectEnabled(false)
                                             .build()
                                     )
